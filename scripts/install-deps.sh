@@ -26,7 +26,7 @@ if [ ! -d "$EPAPER_DIR" ]; then
     fi
 fi
 cd "$EPAPER_DIR/RaspberryPi_JetsonNano/python"
-sudo python3 setup.py install
+sudo pip3 install .
 
 echo "Installing Python dependencies..."
 # Get project root - either from parameter or auto-detect

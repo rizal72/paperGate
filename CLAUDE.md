@@ -125,6 +125,48 @@ paperGate/
 - `index.html`: Main control panel UI
 - `feed.html`: RSS feed reader optimized for e-paper (black/white, minimal)
 
+### Live Screenshot Display
+
+**Feature**: Real-time preview of the physical e-paper display in the web interface.
+
+**How It Works**:
+
+1. **Screenshot Generation** (`core/screens/__init__.py`):
+   - Every screen's `show()` method saves a screenshot to `core/display/{screen_name}.png`
+   - Screenshots saved immediately after rendering, before physical display update
+   - Examples: `system.png`, `weather.png`, `tailscale.png`, etc.
+
+2. **Screen Tracking** (`core/app.py`):
+   - `_save_current_screen_name()` method saves current screen to `core/display/current_screen.txt`
+   - Called on screen changes (next/previous/switch) and at daemon startup
+   - Provides web interface with name of currently displayed screen
+
+3. **Web Endpoints** (`web/app.py`):
+   - `/display_screenshot/<screen_name>`: Serves screenshot PNG with no-cache headers
+   - `/current_screen_name`: Returns JSON with current screen name
+   - Input validation prevents path traversal attacks
+
+4. **Frontend** (`web/templates/index.html`):
+   - "Current Display" card shows live screenshot preview
+   - Loading overlay with spinner during screen transitions
+   - Smart polling: waits for screen name change + 2 second delay for e-paper refresh
+   - Auto-refresh every 5 seconds (toggle on/off)
+   - Manual refresh button with SVG icon
+   - Intercepts navigation clicks and form submissions to show loading state
+
+**Technical Details**:
+- Screenshots are gitignored (contain personal data like IPs, calendar events)
+- No-cache headers prevent browser from showing stale images
+- Loading delay accounts for e-paper physical refresh time (~2-3 seconds)
+- `forceRefresh` parameter bypasses `isLoading` check for immediate updates
+- Form interception uses `preventDefault()` and `fetch()` to avoid page reloads
+
+**User Experience**:
+- Click Next/Previous/Switch → Loading overlay appears
+- Poll for screen name change → Wait 2 seconds → Load new screenshot
+- Loading disappears only when new image is fully loaded in browser
+- Provides immediate visual feedback when controlling display remotely
+
 ## Configuration
 
 ### Core Settings (core/local_settings.py)

@@ -33,11 +33,13 @@ echo "Step 2/4: Setting up e-Paper display drivers..."
 echo "Step 3/4: Creating configuration files..."
 if [ ! -f core/local_settings.py ]; then
     cp core/local_settings.py.example core/local_settings.py
+    chown $SUDO_USER:$SUDO_USER core/local_settings.py 2>/dev/null || true
     echo "Created core/local_settings.py - Please edit it with your settings"
 fi
 
 if [ ! -f web/app.cfg ]; then
     cp web/app.cfg.example web/app.cfg
+    chown $SUDO_USER:$SUDO_USER web/app.cfg 2>/dev/null || true
     echo "Created web/app.cfg - Please edit it with your auth credentials"
 fi
 

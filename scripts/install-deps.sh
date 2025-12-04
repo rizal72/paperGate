@@ -13,10 +13,19 @@ sudo apt install -y \
     wkhtmltopdf
 
 echo "Installing WaveShare e-Paper drivers..."
-if [ ! -d ~/e-Paper ]; then
-    git clone https://github.com/waveshare/e-Paper ~/e-Paper
+# Determine actual user's home directory (handles sudo correctly)
+USER_HOME=$(getent passwd ${SUDO_USER:-$USER} | cut -d: -f6)
+EPAPER_DIR="$USER_HOME/e-Paper"
+
+if [ ! -d "$EPAPER_DIR" ]; then
+    # Clone as the actual user, not root
+    if [ -n "$SUDO_USER" ]; then
+        sudo -u $SUDO_USER git clone https://github.com/waveshare/e-Paper "$EPAPER_DIR"
+    else
+        git clone https://github.com/waveshare/e-Paper "$EPAPER_DIR"
+    fi
 fi
-cd ~/e-Paper/RaspberryPi_JetsonNano/python
+cd "$EPAPER_DIR/RaspberryPi_JetsonNano/python"
 sudo python3 setup.py install
 
 echo "Installing Python dependencies..."

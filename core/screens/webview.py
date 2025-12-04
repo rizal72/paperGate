@@ -1,8 +1,14 @@
 import threading
 import logging
+import os
 from PIL import Image, ImageDraw, ImageFont
 
 from screens import AbstractScreen
+
+# Get project root for cache directory
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CACHE_DIR = os.path.join(PROJECT_ROOT, 'cache')
+WEBSHOT_PATH = os.path.join(CACHE_DIR, 'webshot.png')
 
 try:
     from local_settings import WEBVIEW_URL
@@ -89,11 +95,15 @@ class Screen(AbstractScreen):
             # Try multiple rendering strategies if one fails
             screenshot_path = None
 
+            # Ensure cache directory exists
+            os.makedirs(CACHE_DIR, exist_ok=True)
+
             # Strategy 1: Mobile user agent with error handling
             try:
                 logging.debug("Trying mobile rendering with error handling")
                 screenshot_path = self.webshot.create_pic(
                     url=WEBVIEW_URL,
+                    output=WEBSHOT_PATH,
                     size=(render_width, render_height),
                     params={
                         '--load-error-handling': 'ignore',
@@ -110,6 +120,7 @@ class Screen(AbstractScreen):
                     logging.debug("Trying minimal rendering (no custom params)")
                     screenshot_path = self.webshot.create_pic(
                         url=WEBVIEW_URL,
+                        output=WEBSHOT_PATH,
                         size=(render_width, render_height)
                     )
                 except Exception as e2:

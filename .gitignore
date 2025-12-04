@@ -22,6 +22,10 @@ core/display/*.png
 core/display/*.txt
 !core/display/.gitkeep
 
+# Runtime cache (temporary files, webshots, etc.)
+cache/*
+!cache/.gitkeep
+
 # IDE
 .vscode/
 .idea/

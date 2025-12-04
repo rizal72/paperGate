@@ -173,10 +173,12 @@ paperGate/
 ├── core/           # Main e-paper display daemon
 │   ├── app.py      # Core application
 │   ├── screens/    # Screen modules
-│   └── libs/       # Supporting libraries
+│   ├── libs/       # Supporting libraries
+│   └── display/    # Runtime screenshots (gitignored)
 ├── web/            # Flask web interface (includes RSS feed reader)
 │   ├── app.py      # Web app + /feed endpoint
 │   └── templates/  # HTML templates
+├── cache/          # Runtime temporary files (gitignored)
 ├── images/         # Shared assets (logos, icons)
 ├── systemd/        # Service definitions (2 services)
 └── scripts/        # Installation automation

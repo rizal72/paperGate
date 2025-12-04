@@ -33,6 +33,8 @@ paperGate/
 │   │   ├── index.html    # Main control panel
 │   │   └── feed.html     # RSS feed reader
 │   └── app.cfg.example
+├── cache/            # Runtime temporary files (gitignored)
+│   └── webshot.png   # Webview screen webpage screenshot
 ├── images/           # Shared assets (logos, weather icons)
 ├── screenshots/      # Documentation screenshots (for README)
 ├── systemd/          # Service definitions (2 services total)
@@ -368,6 +370,53 @@ class Screen(AbstractScreen):
         self.text("Hello World", font_size=40, position=(50, 50))
 ```
 
+## Screen Details
+
+### Webview Screen
+
+The webview screen displays webpage screenshots on the e-paper display using wkhtmltoimage.
+
+**Features:**
+- Asynchronous rendering in background thread (non-blocking)
+- Screenshot caching to avoid re-rendering on every screen change
+- Screenshots saved to `cache/webshot.png` (gitignored)
+- Configurable auto-refresh interval (default: 5 minutes)
+- Manual refresh via KEY1 button
+- Loading/rendering status messages
+- Multiple rendering strategies with fallback
+
+**Configuration** (add to `local_settings.py`):
+```python
+WEBVIEW_URL = "http://localhost:5000/feed"  # URL to render
+WEBVIEW_RELOAD_INTERVAL = 300  # Seconds between auto-refreshes (default: 300 = 5 minutes)
+WEBVIEW_SCALE = 0.8  # Scale factor for webpage (default: 0.5)
+WEBVIEW_ORIENTATION = 'landscape'  # 'landscape' or 'portrait' (default: 'landscape')
+```
+
+**Note on WEBVIEW_SCALE:**
+- `0.5`: Captures webpage at 2x size, scales to 50% - shows more content
+- `1.0`: Captures at display size (no scaling) - less content, larger text
+- `0.25`: Captures at 4x size, scales to 25% - entire page, smaller text
+
+**Note on WEBVIEW_ORIENTATION:**
+- `'landscape'` (default): Renders as 844x390 viewport (wide) - good for news sites
+- `'portrait'`: Renders as 390x844 viewport (tall) - good for mobile-first sites
+
+**Dependencies:**
+```bash
+sudo apt install wkhtmltopdf
+sudo pip3 install htmlwebshot
+```
+
+**Behavior:**
+- First load: Shows "Loading webpage..." message while rendering (~1-2 minutes)
+- Subsequent loads: Shows cached screenshot immediately, refreshes in background
+- KEY1: Force refresh (clears cache and starts new render)
+- Auto-refresh: Re-renders every `WEBVIEW_RELOAD_INTERVAL` seconds
+- Screenshots saved to `cache/webshot.png` for reuse
+
+**Common Use:** By default configured to show integrated RSS feed reader at `http://localhost:5000/feed`
+
 ## Git Workflow
 
 ### .gitignore Strategy
@@ -449,13 +498,13 @@ If migrating from separate epdtext/epdtext-web/epdtext-feed:
 
 Planned features (not yet implemented):
 
-- Screenshot display in web interface (per-screen PNGs)
-- Web UI screen gallery
-- Live preview with WebSocket updates
+- Web UI screen gallery (show all available screens)
+- Live preview with WebSocket updates (instead of polling)
 - Docker/Docker Compose support
 - Plugin system for custom screens
-- Feed configuration via web UI
+- Feed configuration via web UI (instead of editing app.py)
 - Backup/restore configuration
+- Mobile app (React Native or PWA)
 
 ## Additional Resources
 

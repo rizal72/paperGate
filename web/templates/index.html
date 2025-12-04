@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}epdtext-web{% endblock %}
+
+{% block header %}
+    <div class="header">
+        <h1>epdtext Control Panel</h1>
+        <div class="header-links">
+            <a href="https://github.com/tsbarnes/epdtext-web" target="_blank">epdtext-web</a>
+            <a href="https://github.com/tsbarnes/epdtext" target="_blank">epdtext</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <!-- Screen Controls -->
+    <div class="card">
+        <h2 class="card-title">Screen Controls</h2>
+        <div class="controls-grid">
+            <div class="button-group">
+                <a class="btn btn-primary" href="{{ url_for('previous_screen') }}">← Previous</a>
+                <a class="btn btn-primary" href="{{ url_for('reload') }}">⟳ Reload</a>
+                <a class="btn btn-primary" href="{{ url_for('next_screen') }}">Next →</a>
+            </div>
+
+            <div class="button-group-keys">
+                <a class="btn btn-secondary" href="{{ url_for('button0') }}">KEY1</a>
+                <a class="btn btn-secondary" href="{{ url_for('button1') }}">KEY2</a>
+                <a class="btn btn-secondary" href="{{ url_for('button2') }}">KEY3</a>
+                <a class="btn btn-secondary" href="{{ url_for('button3') }}">KEY4</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen Management -->
+    <div class="card">
+        <h2 class="card-title">Screen Management</h2>
+
+        <div class="info-box">
+            <strong>Note:</strong> Adding or removing screens affects only the current session.
+            Changes are temporary and will reset when epdtext restarts.
+            Dropdown lists show the initial configuration and won't update after add/remove operations.
+        </div>
+
+        <form action="{{ url_for('screen') }}" method="get">
+            <div class="form-group">
+                <label class="form-label">Switch Screen</label>
+                <div class="input-group">
+                    <select class="form-control" name="screen" required>
+                        <option value="" disabled selected>Select an active screen...</option>
+                        {% for screen in active_screens %}
+                        <option value="{{ screen }}">{{ screen }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">Switch</button>
+                </div>
+                <span class="form-text">Switch to one of the currently active screens</span>
+            </div>
+        </form>
+
+        <form action="{{ url_for('add_screen') }}" method="get">
+            <div class="form-group">
+                <label class="form-label">Add Screen</label>
+                <div class="input-group">
+                    <select class="form-control" name="screen" required{% if not available_screens %} disabled{% endif %}>
+                        {% if available_screens %}
+                        <option value="" disabled selected>Select a screen to add...</option>
+                        {% for screen in available_screens %}
+                        <option value="{{ screen }}">{{ screen }}</option>
+                        {% endfor %}
+                        {% else %}
+                        <option value="" disabled selected>All screens are already active</option>
+                        {% endif %}
+                    </select>
+                    <button type="submit" class="btn btn-primary"{% if not available_screens %} disabled{% endif %}>Add</button>
+                </div>
+                <span class="form-text">Load a screen module not yet active</span>
+            </div>
+        </form>
+
+        <form action="{{ url_for('remove_screen') }}" method="get">
+            <div class="form-group">
+                <label class="form-label">Remove Screen</label>
+                <div class="input-group">
+                    <select class="form-control" name="screen" required>
+                        <option value="" disabled selected>Select an active screen...</option>
+                        {% for screen in active_screens %}
+                        <option value="{{ screen }}">{{ screen }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">Remove</button>
+                </div>
+                <span class="form-text">Unload one of the currently active screens</span>
+            </div>
+        </form>
+    </div>
+
+    <!-- System Information -->
+    <div class="card">
+        <h2 class="card-title">System Information</h2>
+        <div class="system-info">
+            <div class="info-row">
+                <span class="info-label">Operating System</span>
+                <span class="info-value">{{ system.dist() }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Model</span>
+                <span class="info-value">{{ system.model() }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Temperature</span>
+                <span class="info-value {% if system.temperature() > 70 %}temp-hot{% elif system.temperature() > 60 %}temp-warm{% else %}temp-normal{% endif %}">
+                    {{ system.temperature() }}°C
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Network Sent</span>
+                <span class="info-value">{{ system.network_total_sent() }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Network Received</span>
+                <span class="info-value">{{ system.network_total_received() }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Hostname</span>
+                <span class="info-value">{{ system.node() }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">IPv4 Address</span>
+                <span class="info-value">{{ system.local_ipv4_address() }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Uptime</span>
+                <span class="info-value">{{ system.uptime() }}</span>
+            </div>
+        </div>
+    </div>
+{% endblock %}

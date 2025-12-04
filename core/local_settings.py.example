@@ -1,0 +1,62 @@
+import python_weather
+
+# Set to the appropriate driver for your Waveshare e-paper display
+DRIVER = "epd2in7b"
+
+# Set to True to enable debug messages
+DEBUG = False
+
+# ** Leave commented to log to console **
+# LOGFILE = '/home/pi/epd.log'
+
+# Path to the logo to print on the `system` screen
+# ** Must be a black and white 45x45 image file **
+LOGO = '/home/pi/paperGate/images/raspberry-pi.png'
+
+# Monospace fonts are recommended, as the text wrapping is based on character length
+FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
+
+# How long to wait (in seconds) before automatically redrawing the screen
+TIME = 900
+
+# Note: you *must* define at least one calendar to use the 'calendar' screen,
+#       and at least one caldav calendar to use the 'tasks' screen.
+CALENDAR_URLS = [
+    { type: 'webcal', url: '<enter your webcal address>' },
+    { type: 'caldav', url: '<enter your caldav address>', username: '<caldav username>', password: '<caldav password' },
+]
+
+# How long to wait before pulling the calendar events from the web again
+CALENDAR_REFRESH = 900
+
+# Default timezone to use for calendar and tasks screens
+TIMEZONE = "UTC"
+
+# See the `screens` directory for available screens, or create your own (see the wiki)
+SCREENS = [
+    'affirmations',
+    'calendar',
+    'fortune',
+    'system',
+]
+
+# The affirmations to display, include anything that would help to be occasionally reminded of!
+AFFIRMATIONS = [
+    '<list your affirmations here>',
+]
+
+# City to display weather for
+WEATHER_CITY = "Ladysmith, VA"
+# Format for weather output
+WEATHER_FORMAT = python_weather.IMPERIAL
+# Refresh interval in seconds for weather updates
+WEATHER_REFRESH = 900
+
+# Fortune command path
+FORTUNE_PATH = '/usr/games/fortune'
+
+# Webview screen configuration
+WEBVIEW_URL = 'http://localhost:5000/feed'  # Integrated RSS feed reader
+WEBVIEW_RELOAD_INTERVAL = 300  # Seconds between auto-refreshes (5 minutes)
+WEBVIEW_SCALE = 0.8  # Scale factor: 0.5 = shows 2x content, 0.25 = shows 4x content (smaller text)
+WEBVIEW_ORIENTATION = 'landscape'  # 'landscape' or 'portrait' - how the webpage is rendered

@@ -1,0 +1,14 @@
+[Unit]
+Description=paperGate e-Paper Display Manager
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/paperGate/core
+ExecStart=/usr/bin/python3 /home/pi/paperGate/core/app.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

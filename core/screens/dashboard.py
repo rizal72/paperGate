@@ -1,0 +1,75 @@
+import logging
+import threading
+
+from libs.calendar import Calendar, get_calendar, update_calendar
+from libs.weather import Weather, get_weather, update_weather
+from screens import AbstractScreen
+
+
+class Screen(AbstractScreen):
+    calendar: Calendar = get_calendar()
+    weather: Weather = get_weather()
+
+    def reload(self):
+        self.blank()
+        self.draw_titlebar("Dashboard")
+
+        # Use PNG icon instead of emoji (smaller size for dashboard)
+        icon_image = self.weather.get_icon_image(size=40)
+        if icon_image:
+            # Resize to fit better in dashboard layout
+            icon_image = icon_image.resize((35, 35))
+            self.image.paste(icon_image, (15, 28))
+
+        text = str(self.weather.get_temperature()) + '°'
+        self.text(text, font_size=35, position=(60, 25))
+
+        text = str(self.weather.get_sky_text())
+        self.text(text, font_size=20, position=(136, 32))
+
+        self.line((0, 70, self.image.size[0], 70), width=1)
+
+        if len(self.calendar.events) > 0:
+            start = self.calendar.standardize_date(self.calendar.events[0]["start"])
+            text = ' -- ' + self.calendar.humanized_datetime(start) + ' -- '
+            self.centered_text(text, font_size=16, y=75)
+
+            text = str(self.calendar.events[0]['summary'])
+            self.text(text, font_size=14, position=(5, 95), max_lines=2)
+        else:
+            text = "No calendar events"
+            self.centered_text(text, font_size=14, y=85)
+
+        self.line((0, 130, self.image.size[0], 130), width=1)
+
+        if len(self.calendar.tasks) > 0:
+            text = str(self.calendar.tasks[0]['summary'])
+            self.text(text, font_size=14, position=(5, 135), max_lines=1)
+
+            if self.calendar.tasks[0].get('due'):
+                text = ' - Due: ' + self.calendar.humanized_datetime(self.calendar.tasks[0]['due'])
+                self.text(text, font_size=14, position=(5, 150), max_lines=1)
+        else:
+            text = "No current tasks"
+            self.centered_text(text, font_size=14, y=145)
+
+    def handle_btn_press(self, button_number=1):
+        thread_lock = threading.Lock()
+        thread_lock.acquire()
+        if button_number == 0:
+            pass
+        elif button_number == 1:
+            self.blank()
+            self.text("Please wait...", font_size=40)
+            self.show()
+            update_calendar()
+            update_weather()
+            self.reload()
+            self.show()
+        elif button_number == 2:
+            pass
+        elif button_number == 3:
+            pass
+        else:
+            logging.error("Unknown button pressed: KEY{}".format(button_number + 1))
+        thread_lock.release()

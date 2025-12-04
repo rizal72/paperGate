@@ -4,7 +4,7 @@ import re
 import os
 from functools import wraps
 from datetime import datetime
-from flask import Flask, render_template, flash, redirect, request, Response
+from flask import Flask, render_template, flash, redirect, request, Response, send_file, jsonify
 import feedparser
 
 from system import System
@@ -12,6 +12,18 @@ from system import System
 
 app = Flask(__name__)
 app.config.from_pyfile("app.cfg")
+
+# Disable caching for development
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+@app.after_request
+def add_no_cache_headers(response):
+    """Add no-cache headers to all responses"""
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 try:
     mq = posix_ipc.MessageQueue("/epdtext_ipc")
     mq.block = False
@@ -37,9 +49,9 @@ def check_auth(username, password):
 def authenticate():
     """Sends a 401 response that enables basic auth."""
     return Response(
-        'Authentication required. Please login to access epdtext-web.',
+        'Authentication required. Please login to access paperGate Web.',
         401,
-        {'WWW-Authenticate': 'Basic realm="epdtext-web"'}
+        {'WWW-Authenticate': 'Basic realm="paperGate Web"'}
     )
 
 
@@ -143,7 +155,7 @@ def index():
 @requires_auth
 def next_screen():
     mq.send("next", timeout=10)
-    flash("Sent 'next' message to epdtext")
+    flash("Sent 'next' message to paperGate")
     return redirect('/')
 
 
@@ -151,7 +163,7 @@ def next_screen():
 @requires_auth
 def previous_screen():
     mq.send("previous", timeout=10)
-    flash("Sent 'previous' message to epdtext")
+    flash("Sent 'previous' message to paperGate")
     return redirect('/')
 
 
@@ -159,7 +171,7 @@ def previous_screen():
 @requires_auth
 def button0():
     mq.send("button0", timeout=10)
-    flash("Sent 'KEY1' message to epdtext")
+    flash("Sent 'KEY1' message to paperGate")
     return redirect('/')
 
 
@@ -167,7 +179,7 @@ def button0():
 @requires_auth
 def button1():
     mq.send("button1", timeout=10)
-    flash("Sent 'KEY2' message to epdtext")
+    flash("Sent 'KEY2' message to paperGate")
     return redirect('/')
 
 
@@ -175,7 +187,7 @@ def button1():
 @requires_auth
 def button2():
     mq.send("button2", timeout=10)
-    flash("Sent 'KEY3' message to epdtext")
+    flash("Sent 'KEY3' message to paperGate")
     return redirect('/')
 
 
@@ -183,7 +195,7 @@ def button2():
 @requires_auth
 def button3():
     mq.send("button3", timeout=10)
-    flash("Sent 'KEY4' message to epdtext")
+    flash("Sent 'KEY4' message to paperGate")
     return redirect('/')
 
 
@@ -191,7 +203,7 @@ def button3():
 @requires_auth
 def reload():
     mq.send("reload", timeout=10)
-    flash("Sent 'reload' message to epdtext")
+    flash("Sent 'reload' message to paperGate")
     return redirect('/')
 
 
@@ -204,7 +216,7 @@ def screen():
         flash("Invalid screen name. Only alphanumeric, underscore, hyphen, and dot allowed.", "error")
         return redirect('/')
     mq.send("screen " + screen_name, timeout=10)
-    flash("Sent 'screen' message to epdtext")
+    flash("Sent 'screen' message to paperGate")
     return redirect('/')
 
 
@@ -240,8 +252,62 @@ def remove_screen():
     return redirect('/')
 
 
-@app.route('/feed')
+@app.route('/display_screenshot/<screen_name>')
 @requires_auth
+def display_screenshot(screen_name):
+    """Serve a screenshot for a specific screen with no-cache headers."""
+    # Validate screen name (security)
+    screen_name = validate_screen_name(screen_name)
+    if not screen_name:
+        return "Invalid screen name", 400
+
+    screenshot_path = os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        'core',
+        'display',
+        f'{screen_name}.png'
+    )
+
+    if not os.path.exists(screenshot_path):
+        return f"Screenshot for '{screen_name}' not available", 404
+
+    # Return image with no-cache headers
+    response = send_file(
+        screenshot_path,
+        mimetype='image/png',
+        max_age=0
+    )
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+
+    return response
+
+
+@app.route('/current_screen_name')
+@requires_auth
+def current_screen_name():
+    """Return the name of the currently displayed screen."""
+    current_screen_file = os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        'core',
+        'display',
+        'current_screen.txt'
+    )
+
+    try:
+        with open(current_screen_file, 'r') as f:
+            screen_name = f.read().strip()
+        return jsonify({'screen': screen_name}), 200
+    except FileNotFoundError:
+        return jsonify({'error': 'Current screen not available'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/feed')
 def feed_index():
     """RSS feed reader page - integrated from epdtext-feed"""
     articles = []

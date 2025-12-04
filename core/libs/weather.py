@@ -4,7 +4,12 @@ import python_weather
 import asyncio
 import xml
 import logging
+import os
 from PIL import Image
+
+# Get project root for image paths
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+IMAGES_DIR = os.path.join(PROJECT_ROOT, 'images')
 
 
 try:
@@ -186,26 +191,26 @@ class Weather(threading.Thread):
 
         # Map weather kinds to icon files (order matters - more specific first)
         icon_map = {
-            'thunderstorm': 'images/thunderstorm.png',
-            'thunder': 'images/thunderstorm.png',
-            'storm': 'images/thunderstorm.png',
-            'drizzle': 'images/drizzle.png',
-            'rain': 'images/rain.png',
-            'rainy': 'images/rain.png',
-            'shower': 'images/rain.png',
-            'snow': 'images/snow.png',
-            'snowy': 'images/snow.png',
-            'sleet': 'images/snow.png',
-            'fog': 'images/fog.png',
-            'foggy': 'images/fog.png',
-            'mist': 'images/fog.png',
-            'haze': 'images/fog.png',
-            'sunny': 'images/sun.png',
-            'clear': 'images/sun.png',
-            'partly_cloudy': 'images/cloud_sun.png',
-            'partly': 'images/cloud_sun.png',
-            'cloudy': 'images/cloud.png',
-            'overcast': 'images/cloud.png',
+            'thunderstorm': os.path.join(IMAGES_DIR, 'thunderstorm.png'),
+            'thunder': os.path.join(IMAGES_DIR, 'thunderstorm.png'),
+            'storm': os.path.join(IMAGES_DIR, 'thunderstorm.png'),
+            'drizzle': os.path.join(IMAGES_DIR, 'drizzle.png'),
+            'rain': os.path.join(IMAGES_DIR, 'rain.png'),
+            'rainy': os.path.join(IMAGES_DIR, 'rain.png'),
+            'shower': os.path.join(IMAGES_DIR, 'rain.png'),
+            'snow': os.path.join(IMAGES_DIR, 'snow.png'),
+            'snowy': os.path.join(IMAGES_DIR, 'snow.png'),
+            'sleet': os.path.join(IMAGES_DIR, 'snow.png'),
+            'fog': os.path.join(IMAGES_DIR, 'fog.png'),
+            'foggy': os.path.join(IMAGES_DIR, 'fog.png'),
+            'mist': os.path.join(IMAGES_DIR, 'fog.png'),
+            'haze': os.path.join(IMAGES_DIR, 'fog.png'),
+            'sunny': os.path.join(IMAGES_DIR, 'sun.png'),
+            'clear': os.path.join(IMAGES_DIR, 'sun.png'),
+            'partly_cloudy': os.path.join(IMAGES_DIR, 'cloud_sun.png'),
+            'partly': os.path.join(IMAGES_DIR, 'cloud_sun.png'),
+            'cloudy': os.path.join(IMAGES_DIR, 'cloud.png'),
+            'overcast': os.path.join(IMAGES_DIR, 'cloud.png'),
         }
 
         # Find matching icon

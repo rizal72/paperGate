@@ -33,12 +33,26 @@ class App:
     def current_screen_module(self):
         return self.screen_modules[self.current_screen_index]
 
+    def _save_current_screen_name(self):
+        """Save the current screen name to a file for web interface."""
+        display_dir = os.path.join(os.path.dirname(__file__), 'display')
+        os.makedirs(display_dir, exist_ok=True)
+        current_screen_file = os.path.join(display_dir, 'current_screen.txt')
+
+        try:
+            screen_name = self.current_screen().__module__.split('.')[-1]
+            with open(current_screen_file, 'w') as f:
+                f.write(screen_name)
+        except Exception as e:
+            self.logger.warning(f"Failed to save current screen name: {e}")
+
     def previous_screen(self):
         if self.current_screen_index > 0:
             self.current_screen_index -= 1
         else:
             self.current_screen_index = len(self.screens) - 1
         self.logger.debug("Current screen: {0}".format(self.current_screen().__module__))
+        self._save_current_screen_name()
         self.current_screen().reload()
         self.current_screen().show()
 
@@ -47,6 +61,7 @@ class App:
         if self.current_screen_index >= len(self.screens):
             self.current_screen_index = 0
         self.logger.debug("Current screen: {0}".format(self.current_screen().__module__))
+        self._save_current_screen_name()
         self.current_screen().reload()
         self.current_screen().show()
 
@@ -186,6 +201,9 @@ class App:
         for module in SCREENS:
             self.add_screen(module)
 
+        # Save initial screen name for web interface
+        self._save_current_screen_name()
+
     def shutdown(self, *args):
         self.logger.info("epdtext shutting down gracefully...")
         self.epd.clear()
@@ -236,6 +254,7 @@ class App:
                 if self.current_screen_index < 0:
                     self.logger.error("Couldn't find screen '{0}'".format(parts[1]))
                     self.current_screen_index = 0
+                self._save_current_screen_name()
                 self.current_screen().reload()
                 self.current_screen().show()
             elif command == "remove_screen":

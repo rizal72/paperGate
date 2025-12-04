@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}epdtext-web{% endblock %}
+{% block title %}paperGate Web{% endblock %}
 
 {% block header %}
     <div class="header">
-        <h1>epdtext Control Panel</h1>
+        <h1>paperGate Control Panel</h1>
         <div class="header-links">
-            <a href="https://github.com/tsbarnes/epdtext-web" target="_blank">epdtext-web</a>
-            <a href="https://github.com/tsbarnes/epdtext" target="_blank">epdtext</a>
+            <a href="https://github.com/rizal72/paperGate" target="_blank">GitHub</a>
         </div>
     </div>
 {% endblock %}
@@ -19,7 +18,12 @@
         <div class="controls-grid">
             <div class="button-group">
                 <a class="btn btn-primary" href="{{ url_for('previous_screen') }}">← Previous</a>
-                <a class="btn btn-primary" href="{{ url_for('reload') }}">⟳ Reload</a>
+                <a class="btn btn-primary btn-with-icon" href="{{ url_for('reload') }}">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13.65 2.35C12.2 0.9 10.21 0 8 0 3.58 0 0.01 3.58 0.01 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L9 7h7V0l-2.35 2.35z" fill="currentColor"/>
+                    </svg>
+                    Reload
+                </a>
                 <a class="btn btn-primary" href="{{ url_for('next_screen') }}">Next →</a>
             </div>
 
@@ -32,13 +36,247 @@
         </div>
     </div>
 
+    <!-- Current Display Preview -->
+    <div class="card">
+        <h2 class="card-title">Current Display</h2>
+        <div class="display-preview">
+            <div class="display-image-container">
+                <img id="display-image"
+                     src=""
+                     alt="Loading display..."
+                     onerror="this.alt='Display not available';">
+                <div id="loading-overlay" class="loading-overlay" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Rendering screen...</div>
+                </div>
+            </div>
+            <div class="display-info">
+                <span class="current-screen-label">Screen: <strong id="current-screen-name">Loading...</strong></span>
+                <button class="btn btn-secondary btn-sm btn-with-icon" onclick="refreshDisplay()" title="Refresh display">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13.65 2.35C12.2 0.9 10.21 0 8 0 3.58 0 0.01 3.58 0.01 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L9 7h7V0l-2.35 2.35z" fill="currentColor"/>
+                    </svg>
+                    Refresh
+                </button>
+                <label class="toggle-label">
+                    <input type="checkbox" id="auto-refresh-toggle" checked onchange="toggleAutoRefresh()">
+                    Auto-refresh (5s)
+                </label>
+                <span class="last-update" id="last-update">Last updated: never</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let autoRefreshInterval;
+    let autoRefreshEnabled = true;
+    let currentScreenName = null;
+    let isLoading = false;
+
+    async function getCurrentScreenName() {
+        try {
+            const response = await fetch('/current_screen_name');
+            const data = await response.json();
+            return data.screen || null;
+        } catch (error) {
+            console.error('Failed to get current screen name:', error);
+            return null;
+        }
+    }
+
+    async function refreshDisplay(forceRefresh = false) {
+        if (isLoading && !forceRefresh) return; // Skip refresh if loading (unless forced)
+
+        const newScreenName = await getCurrentScreenName();
+
+        if (!newScreenName) {
+            document.getElementById('display-image').alt = 'Display not available';
+            document.getElementById('current-screen-name').textContent = 'Unknown';
+            return;
+        }
+
+        currentScreenName = newScreenName;
+        document.getElementById('current-screen-name').textContent = currentScreenName;
+
+        const img = document.getElementById('display-image');
+        const timestamp = new Date().getTime();
+
+        console.log('Loading image: /display_screenshot/' + currentScreenName + '?t=' + timestamp);
+
+        // Return a promise that resolves when image is loaded
+        return new Promise((resolve) => {
+            img.onload = () => {
+                console.log('Image loaded successfully');
+                document.getElementById('last-update').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+                resolve();
+            };
+            img.onerror = () => {
+                console.log('Error loading image');
+                resolve(); // Resolve anyway on error
+            };
+            img.src = `/display_screenshot/${currentScreenName}?t=${timestamp}`;
+        });
+    }
+
+    function showLoading() {
+        isLoading = true;
+        document.getElementById('current-screen-name').textContent = 'Loading...';
+        document.getElementById('last-update').textContent = 'Waiting for screen to render...';
+        document.getElementById('loading-overlay').style.display = 'flex';
+
+        // Stop auto-refresh during loading
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+    }
+
+    function hideLoading() {
+        isLoading = false;
+        document.getElementById('loading-overlay').style.display = 'none';
+
+        // Restart auto-refresh if enabled
+        if (autoRefreshEnabled) {
+            startAutoRefresh();
+        }
+    }
+
+    // Wait for screen to actually change with simple delay strategy
+    async function waitForScreenChange(oldScreenName, clickTime, maxAttempts = 40) {
+        console.log('Waiting for screen to change from: ' + oldScreenName);
+
+        let screenChanged = false;
+        let newScreenName = oldScreenName;
+
+        // First, wait for screen name to change
+        for (let i = 0; i < 20; i++) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            newScreenName = await getCurrentScreenName();
+            console.log('Attempt ' + (i+1) + ': current screen = ' + newScreenName);
+
+            if (newScreenName && newScreenName !== oldScreenName) {
+                console.log('Screen name changed to: ' + newScreenName);
+                screenChanged = true;
+                break;
+            }
+        }
+
+        if (!screenChanged) {
+            console.log('Screen name never changed, timing out');
+            return false;
+        }
+
+        // Now wait additional time for e-paper display to refresh and screenshot to be saved
+        // E-paper displays typically take 2-5 seconds to refresh
+        console.log('Waiting 2 seconds for e-paper display to refresh and screenshot to be saved...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        console.log('Screenshot should be ready now');
+        return true;
+    }
+
+    // Intercept navigation button clicks to show loading
+    function setupNavigationHandlers() {
+        const navLinks = document.querySelectorAll('a[href*="next_screen"], a[href*="previous_screen"], a[href*="screen?screen="]');
+        console.log('Found ' + navLinks.length + ' navigation links');
+        navLinks.forEach(link => {
+            link.addEventListener('click', async function(e) {
+                e.preventDefault(); // Prevent default link behavior
+                console.log('Navigation clicked!');
+
+                const oldScreenName = currentScreenName;
+                const clickTime = Date.now();
+                showLoading();
+
+                // Trigger the backend action
+                const linkUrl = this.getAttribute('href');
+                console.log('Fetching: ' + linkUrl);
+                await fetch(linkUrl);
+
+                // Wait for screen to actually change and screenshot to be ready
+                await waitForScreenChange(oldScreenName, clickTime);
+
+                // Force refresh display (bypass isLoading check) and hide loading
+                await refreshDisplay(true);
+                hideLoading();
+            });
+        });
+
+        // Also intercept screen management form submissions
+        const screenForms = document.querySelectorAll('form[action*="screen"]');
+        console.log('Found ' + screenForms.length + ' screen forms');
+        screenForms.forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault(); // Prevent default form submission
+                console.log('Screen form submitted!');
+
+                const oldScreenName = currentScreenName;
+                const clickTime = Date.now();
+                showLoading();
+
+                // Get form action URL and parameters
+                const formData = new FormData(form);
+                const params = new URLSearchParams(formData);
+                const actionUrl = form.getAttribute('action') + '?' + params.toString();
+
+                console.log('Fetching: ' + actionUrl);
+                await fetch(actionUrl);
+
+                // Wait for screen to actually change and screenshot to be ready
+                await waitForScreenChange(oldScreenName, clickTime);
+
+                // Force refresh display (bypass isLoading check) and hide loading
+                await refreshDisplay(true);
+                hideLoading();
+            });
+        });
+    }
+
+    function toggleAutoRefresh() {
+        autoRefreshEnabled = document.getElementById('auto-refresh-toggle').checked;
+        if (autoRefreshEnabled) {
+            startAutoRefresh();
+        } else {
+            stopAutoRefresh();
+        }
+    }
+
+    function startAutoRefresh() {
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        autoRefreshInterval = setInterval(refreshDisplay, 5000);
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+        }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded, setting up...');
+
+        // Initial load
+        refreshDisplay();
+
+        // Setup navigation handlers
+        setupNavigationHandlers();
+
+        // Start auto-refresh
+        if (autoRefreshEnabled) {
+            startAutoRefresh();
+        }
+    });
+    </script>
+
     <!-- Screen Management -->
     <div class="card">
         <h2 class="card-title">Screen Management</h2>
 
         <div class="info-box">
             <strong>Note:</strong> Adding or removing screens affects only the current session.
-            Changes are temporary and will reset when epdtext restarts.
+            Changes are temporary and will reset when paperGate restarts.
             Dropdown lists show the initial configuration and won't update after add/remove operations.
         </div>
 

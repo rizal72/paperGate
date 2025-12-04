@@ -52,6 +52,25 @@ class AbstractScreen:
             logging.error("show() called with no image defined!")
             return
 
+        # Save screenshot for this screen (always, for web interface)
+        display_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            'core',
+            'display'
+        )
+        os.makedirs(display_dir, exist_ok=True)
+
+        # Use module name as filename (e.g., 'system.png', 'weather.png')
+        screen_name = self.__module__.split('.')[-1]
+        screenshot_path = os.path.join(display_dir, f'{screen_name}.png')
+
+        try:
+            self.image.save(screenshot_path)
+            logging.debug(f"Saved screenshot to {screenshot_path}")
+        except Exception as e:
+            logging.warning(f"Failed to save screenshot for {screen_name}: {e}")
+
+        # Debug screenshots with UUID (only if enabled)
         if settings.SAVE_SCREENSHOTS:
             self.image.save(self.filename)
 

@@ -1,10 +1,18 @@
 # Core dependencies
 Pillow>=9.0.0
 gpiozero>=1.6.2
+
+# Weather (with specific aiohttp version to avoid conflicts)
+aiohttp==3.9.0
+async-timeout>=4.0,<5.0
 python-weather>=0.4.2
+
+# Calendar
 caldav>=0.9.0
 icalevents>=0.1.25
 icalendar>=4.1.0
+
+# IPC and utilities
 posix_ipc>=1.0.5
 pytz>=2021.3
 tzlocal>=4.0

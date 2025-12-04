@@ -1,9 +1,14 @@
 import logging
+import os
 from PIL import Image
 
 import settings
 from libs.tailscale import get_tailscale
 from screens import AbstractScreen
+
+# Get project root for image paths
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+IMAGES_DIR = os.path.join(PROJECT_ROOT, 'images')
 
 
 class Screen(AbstractScreen):
@@ -23,11 +28,12 @@ class Screen(AbstractScreen):
 
         # LEFT: Tailscale icon (top-left, 55x55, aligned with peers)
         try:
-            icon = Image.open("images/tailscale.png")
+            icon_path = os.path.join(IMAGES_DIR, 'tailscale.png')
+            icon = Image.open(icon_path)
             icon = icon.resize((55, 55))
             self.image.paste(icon, (5, 25))
         except FileNotFoundError:
-            logging.warning("Tailscale icon not found at images/tailscale.png")
+            logging.warning(f"Tailscale icon not found at {icon_path}")
 
         # RIGHT: Build the status string (larger font: 13pt)
         string = ''

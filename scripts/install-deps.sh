@@ -20,7 +20,9 @@ cd ~/e-Paper/RaspberryPi_JetsonNano/python
 sudo python3 setup.py install
 
 echo "Installing Python dependencies..."
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
+# Get project root - either from parameter or auto-detect
+PROJECT_ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+cd "$PROJECT_ROOT"
 sudo pip3 install -r requirements.txt
 
 echo "Dependencies installed successfully"

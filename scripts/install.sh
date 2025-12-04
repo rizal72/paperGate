@@ -23,7 +23,7 @@ echo ""
 
 # Install dependencies
 echo "Step 1/4: Installing system dependencies..."
-sudo ./scripts/install-deps.sh
+sudo ./scripts/install-deps.sh "$PROJECT_ROOT"
 
 # Configure WaveShare drivers
 echo "Step 2/4: Setting up e-Paper display drivers..."

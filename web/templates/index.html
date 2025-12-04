@@ -45,10 +45,6 @@
                      src=""
                      alt="Loading display..."
                      onerror="this.alt='Display not available';">
-                <div id="loading-overlay" class="loading-overlay" style="display: none;">
-                    <div class="loading-spinner"></div>
-                    <div class="loading-text">Rendering screen...</div>
-                </div>
             </div>
             <div class="display-info">
                 <span class="current-screen-label">Screen: <strong id="current-screen-name">Loading...</strong></span>
@@ -64,6 +60,10 @@
                 </label>
                 <span class="last-update" id="last-update">Last updated: never</span>
             </div>
+        </div>
+        <div id="loading-overlay" class="loading-overlay" style="display: none;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Rendering screen...</div>
         </div>
     </div>
 

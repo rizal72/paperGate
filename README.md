@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="images/papergate-logo-full.svg" alt="paperGate Logo" width="200">
+</p>
+
 # paperGate
 
 Raspberry Pi gateway with e-Paper display for home network monitoring and control.

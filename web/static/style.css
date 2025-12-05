@@ -55,18 +55,41 @@ body {
     gap: 1rem;
 }
 
-.header-logo {
-    height: 64px;
+.header-logo-icon {
+    height: 56px;
     width: auto;
     flex-shrink: 0;
 }
 
+.header-logo-full {
+    display: none;
+    height: 56px;
+    width: auto;
+    flex-shrink: 0;
+}
+
+.header-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.header-project-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+
 .header h1 {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--dark);
     margin: 0;
     letter-spacing: 0.02em;
+    line-height: 1;
 }
 
 .header-links {
@@ -351,22 +374,28 @@ select.form-control:hover {
     .header-brand {
         flex-direction: column;
         gap: 0.75rem;
+        align-items: center;
     }
 
-    .header-logo {
-        height: 52px;
+    .header-logo-icon {
+        display: none;
     }
 
-    .header h1 {
-        font-size: 1.5rem;
+    .header-logo-full {
+        display: block;
+        height: 120px;
+    }
+
+    .header-title {
+        display: none;
     }
 
     .button-group {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .button-group-keys {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(4, 1fr);
     }
 
     .card {
@@ -392,8 +421,27 @@ select.form-control:hover {
 }
 
 @media (max-width: 480px) {
+    .button-group {
+        gap: 0.5rem;
+    }
+
+    .button-group .btn {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
     .button-group-keys {
-        grid-template-columns: 1fr;
+        gap: 0.4rem;
+    }
+
+    .button-group-keys .btn {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    /* Hide text on small screens, keep only icons/arrows */
+    .btn-text-mobile {
+        display: none;
     }
 }
 

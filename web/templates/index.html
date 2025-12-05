@@ -5,8 +5,12 @@
 {% block header %}
     <div class="header">
         <div class="header-brand">
-            <img src="{{ url_for('static', filename='papergate-horizontal.svg') }}" alt="paperGate" class="header-logo">
-            <h1>Control Panel</h1>
+            <img src="{{ url_for('static', filename='papergate-icon.svg') }}" alt="paperGate" class="header-logo-icon">
+            <img src="{{ url_for('static', filename='papergate-logo-full.svg') }}" alt="paperGate" class="header-logo-full">
+            <div class="header-title">
+                <h2 class="header-project-name">paperGate</h2>
+                <h1>Control Panel</h1>
+            </div>
         </div>
         <div class="header-links">
             <a href="https://github.com/rizal72/paperGate" target="_blank">GitHub</a>
@@ -20,14 +24,24 @@
         <h2 class="card-title">Screen Controls</h2>
         <div class="controls-grid">
             <div class="button-group">
-                <a class="btn btn-primary" href="{{ url_for('previous_screen') }}">← Previous</a>
+                <a class="btn btn-primary btn-with-icon" href="{{ url_for('previous_screen') }}">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2L4 8l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    </svg>
+                    <span class="btn-text-mobile">Previous</span>
+                </a>
                 <a class="btn btn-accent btn-with-icon" href="{{ url_for('reload') }}">
                     <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M13.65 2.35C12.2 0.9 10.21 0 8 0 3.58 0 0.01 3.58 0.01 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L9 7h7V0l-2.35 2.35z" fill="currentColor"/>
                     </svg>
-                    Reload
+                    <span class="btn-text-mobile">Reload</span>
                 </a>
-                <a class="btn btn-primary" href="{{ url_for('next_screen') }}">Next →</a>
+                <a class="btn btn-primary btn-with-icon" href="{{ url_for('next_screen') }}">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 2l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    </svg>
+                    <span class="btn-text-mobile">Next</span>
+                </a>
             </div>
 
             <div class="button-group-keys">

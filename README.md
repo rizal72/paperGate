@@ -42,8 +42,8 @@ sudo ./scripts/install.sh
 ./scripts/setup-aliases.sh
 
 # Edit configuration
-micro core/local_settings.py
-micro web/app.cfg
+nano core/local_settings.py
+nano web/app.cfg
 
 # Start services using aliases
 pg-start

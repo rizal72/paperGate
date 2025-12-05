@@ -108,3 +108,49 @@ try:
     from local_settings import FORTUNE_PATH
 except ImportError:
     FORTUNE_PATH = None
+
+try:
+    from local_settings import WEBVIEW_URL
+except ImportError:
+    WEBVIEW_URL = 'http://localhost:5000'
+
+try:
+    from local_settings import WEBVIEW_RELOAD_INTERVAL
+except ImportError:
+    WEBVIEW_RELOAD_INTERVAL = 300
+
+try:
+    from local_settings import WEBVIEW_SCALE
+except ImportError:
+    WEBVIEW_SCALE = 0.5
+
+try:
+    from local_settings import WEBVIEW_ORIENTATION
+except ImportError:
+    WEBVIEW_ORIENTATION = 'landscape'
+
+try:
+    from local_settings import NETWORK_INTERFACE
+except ImportError:
+    NETWORK_INTERFACE = 'eth0'
+
+# Web Interface Configuration
+try:
+    from local_settings import SECRET_KEY
+except ImportError:
+    SECRET_KEY = b'change-me-insecure-default'
+
+try:
+    from local_settings import AUTH_USERNAME
+except ImportError:
+    AUTH_USERNAME = 'admin'
+
+try:
+    from local_settings import AUTH_PASSWORD
+except ImportError:
+    AUTH_PASSWORD = 'changeme'
+
+try:
+    from local_settings import FEEDS
+except ImportError:
+    FEEDS = []

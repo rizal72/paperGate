@@ -16,15 +16,8 @@ import settings
 from settings import TIMEZONE
 
 
-try:
-    from local_settings import CALENDAR_URLS
-except ImportError:
-    CALENDAR_URLS = None
-
-try:
-    from local_settings import CALENDAR_REFRESH
-except ImportError:
-    CALENDAR_REFRESH = 900
+CALENDAR_URLS = settings.CALENDAR_URLS
+CALENDAR_REFRESH = settings.CALENDAR_REFRESH
 
 timezone = pytz.timezone(TIMEZONE)
 logger = logging.getLogger('pitftmanager.libs.calendar')

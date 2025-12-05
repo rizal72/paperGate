@@ -10,12 +10,12 @@ import feedparser
 
 from system import System
 
-# Import settings from core/local_settings.py
+# Import settings from core/settings.py (which wraps local_settings.py)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'core'))
 try:
-    import local_settings as settings
+    import settings
 except ImportError:
-    print("ERROR: local_settings.py not found in core/")
+    print("ERROR: settings.py not found in core/")
     print("Please copy core/local_settings.py.example to core/local_settings.py and configure it")
     sys.exit(1)
 

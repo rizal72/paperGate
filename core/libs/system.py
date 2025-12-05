@@ -5,13 +5,9 @@ import time
 
 import distro
 import psutil
+import settings
 
-try:
-    # Try to load the network interface setting from local_settings.py
-    from local_settings import NETWORK_INTERFACE
-except ImportError:
-    # Set the default to wlan0
-    NETWORK_INTERFACE = "wlan0"
+NETWORK_INTERFACE = settings.NETWORK_INTERFACE
 
 
 logger = logging.getLogger('pitftmanager.libs.system')

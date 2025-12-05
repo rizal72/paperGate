@@ -76,10 +76,9 @@ class Screen(AbstractScreen):
     def get_network_interface(self):
         """Get active network interface"""
         try:
-            from local_settings import NETWORK_INTERFACE
             # Check if interface exists
-            if NETWORK_INTERFACE in psutil.net_if_addrs():
-                return NETWORK_INTERFACE
+            if settings.NETWORK_INTERFACE in psutil.net_if_addrs():
+                return settings.NETWORK_INTERFACE
         except:
             pass
 

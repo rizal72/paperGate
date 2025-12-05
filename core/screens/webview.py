@@ -1,6 +1,7 @@
 import threading
 import logging
 import os
+import settings
 from PIL import Image, ImageDraw, ImageFont
 
 from screens import AbstractScreen
@@ -9,26 +10,6 @@ from screens import AbstractScreen
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CACHE_DIR = os.path.join(PROJECT_ROOT, 'cache')
 WEBSHOT_PATH = os.path.join(CACHE_DIR, 'webshot.png')
-
-try:
-    from local_settings import WEBVIEW_URL
-except ImportError:
-    WEBVIEW_URL = "http://tsbarnes.com/"
-
-try:
-    from local_settings import WEBVIEW_RELOAD_INTERVAL
-except ImportError:
-    WEBVIEW_RELOAD_INTERVAL = 300  # 5 minutes default
-
-try:
-    from local_settings import WEBVIEW_SCALE
-except ImportError:
-    WEBVIEW_SCALE = 0.5  # Scale factor for webpage rendering (0.5 = 50%)
-
-try:
-    from local_settings import WEBVIEW_ORIENTATION
-except ImportError:
-    WEBVIEW_ORIENTATION = 'landscape'  # 'landscape' or 'portrait'
 
 
 class Screen(AbstractScreen):
@@ -41,7 +22,7 @@ class Screen(AbstractScreen):
     _cached_screenshot = None
     _is_rendering = False
     _render_thread = None
-    reload_interval = WEBVIEW_RELOAD_INTERVAL  # Override default reload interval
+    reload_interval = settings.WEBVIEW_RELOAD_INTERVAL  # Override default reload interval
 
     def _init_webshot(self):
         """Lazy initialization of WebShot"""
@@ -63,7 +44,7 @@ class Screen(AbstractScreen):
     def _render_webpage_async(self):
         """Render webpage in background thread"""
         try:
-            logging.info(f"Starting webpage render for {WEBVIEW_URL} (scale: {WEBVIEW_SCALE})")
+            logging.info(f"Starting webpage render for {settings.WEBVIEW_URL} (scale: {settings.WEBVIEW_SCALE})")
             size = self.display.get_size()  # Returns (EPD_HEIGHT=264, EPD_WIDTH=176)
 
             # PIL Images use (width, height) format
@@ -78,7 +59,7 @@ class Screen(AbstractScreen):
 
             # Render webpage based on orientation setting
             # Use typical mobile resolution (iPhone 12/13/14)
-            if WEBVIEW_ORIENTATION.lower() == 'portrait':
+            if settings.WEBVIEW_ORIENTATION.lower() == 'portrait':
                 base_width = 390   # Portrait: narrow
                 base_height = 844  # Portrait: tall
             else:  # landscape (default)
@@ -86,10 +67,10 @@ class Screen(AbstractScreen):
                 base_height = 390  # Landscape: short
 
             # Scale up based on WEBVIEW_SCALE for better quality
-            render_width = int(base_width / WEBVIEW_SCALE)
-            render_height = int(base_height / WEBVIEW_SCALE)
+            render_width = int(base_width / settings.WEBVIEW_SCALE)
+            render_height = int(base_height / settings.WEBVIEW_SCALE)
 
-            logging.info(f"Rendering in {WEBVIEW_ORIENTATION} mode: {render_width}x{render_height}")
+            logging.info(f"Rendering in {settings.WEBVIEW_ORIENTATION} mode: {render_width}x{render_height}")
 
             # wkhtmltoimage expects (width, height)
             # Try multiple rendering strategies if one fails
@@ -102,7 +83,7 @@ class Screen(AbstractScreen):
             try:
                 logging.debug("Trying mobile rendering with error handling")
                 screenshot_path = self.webshot.create_pic(
-                    url=WEBVIEW_URL,
+                    url=settings.WEBVIEW_URL,
                     output=WEBSHOT_PATH,
                     size=(render_width, render_height),
                     params={
@@ -119,7 +100,7 @@ class Screen(AbstractScreen):
                 try:
                     logging.debug("Trying minimal rendering (no custom params)")
                     screenshot_path = self.webshot.create_pic(
-                        url=WEBVIEW_URL,
+                        url=settings.WEBVIEW_URL,
                         output=WEBSHOT_PATH,
                         size=(render_width, render_height)
                     )
@@ -200,7 +181,7 @@ class Screen(AbstractScreen):
             elif self._is_rendering:
                 # Currently rendering in background
                 self.text("Rendering webpage...", font_size=14, position=(10, 40))
-                self.text(f"URL: {WEBVIEW_URL}", font_size=10, position=(10, 60))
+                self.text(f"URL: {settings.WEBVIEW_URL}", font_size=10, position=(10, 60))
                 self.text("This may take 1-2 minutes", font_size=12, position=(10, 80))
             else:
                 # First load - start background render
@@ -209,7 +190,7 @@ class Screen(AbstractScreen):
                 self._render_thread.start()
 
                 self.text("Loading webpage...", font_size=14, position=(10, 40))
-                self.text(f"URL: {WEBVIEW_URL}", font_size=10, position=(10, 60))
+                self.text(f"URL: {settings.WEBVIEW_URL}", font_size=10, position=(10, 60))
         else:
             self.text("WebShot not initialized", font_size=14, position=(10, 40))
 

@@ -6,26 +6,15 @@ import xml
 import logging
 import os
 from PIL import Image
+import settings
 
 # Get project root for image paths
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 IMAGES_DIR = os.path.join(PROJECT_ROOT, 'images')
 
-
-try:
-    from local_settings import WEATHER_FORMAT
-except ImportError:
-    WEATHER_FORMAT = python_weather.IMPERIAL
-
-try:
-    from local_settings import WEATHER_CITY
-except ImportError:
-    WEATHER_CITY = "Richmond, VA"
-
-try:
-    from local_settings import WEATHER_REFRESH
-except ImportError:
-    WEATHER_REFRESH = 900
+WEATHER_FORMAT = settings.WEATHER_FORMAT
+WEATHER_CITY = settings.WEATHER_CITY
+WEATHER_REFRESH = settings.WEATHER_REFRESH
 
 
 logger = logging.getLogger("pitftmanager.libs.weather")

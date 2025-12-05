@@ -42,7 +42,7 @@ sudo ./scripts/install.sh
 ./scripts/setup-aliases.sh
 
 # Edit configuration
-nano core/local_settings.py
+nano local_settings.py
 
 # Start services using aliases
 pg-start
@@ -58,11 +58,11 @@ Access the web interface at: `http://your-pi-ip:5000`
 
 ## Configuration
 
-All configuration is managed in a single file: `core/local_settings.py`
+All configuration is managed in a single file: `local_settings.py`
 
 ### Configuration File
 
-Edit `core/local_settings.py`:
+Edit `local_settings.py`:
 
 ```python
 # Display driver

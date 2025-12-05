@@ -31,16 +31,10 @@ echo "Step 2/4: Setting up e-Paper display drivers..."
 
 # Setup configuration files
 echo "Step 3/4: Creating configuration files..."
-if [ ! -f core/local_settings.py ]; then
-    cp core/local_settings.py.example core/local_settings.py
-    chown $SUDO_USER:$SUDO_USER core/local_settings.py 2>/dev/null || true
-    echo "Created core/local_settings.py - Please edit it with your settings"
-fi
-
-if [ ! -f web/app.cfg ]; then
-    cp web/app.cfg.example web/app.cfg
-    chown $SUDO_USER:$SUDO_USER web/app.cfg 2>/dev/null || true
-    echo "Created web/app.cfg - Please edit it with your auth credentials"
+if [ ! -f local_settings.py ]; then
+    cp local_settings.py.example local_settings.py
+    chown $SUDO_USER:$SUDO_USER local_settings.py 2>/dev/null || true
+    echo "Created local_settings.py - Please edit it with your settings"
 fi
 
 # Setup systemd services
@@ -51,10 +45,9 @@ echo ""
 echo "=== Installation Complete! ==="
 echo ""
 echo "Next steps:"
-echo "1. Edit core/local_settings.py with your configuration"
-echo "2. Edit web/app.cfg with authentication credentials"
-echo "3. Start services: sudo systemctl start papergate papergate-web"
-echo "4. Enable on boot: sudo systemctl enable papergate papergate-web"
+echo "1. Edit local_settings.py with your configuration (display, web auth, feeds, etc.)"
+echo "2. Start services: sudo systemctl start papergate papergate-web"
+echo "3. Enable on boot: sudo systemctl enable papergate papergate-web"
 echo ""
 echo "Access web interface at: http://$(hostname -I | awk '{print $1}'):5000"
 echo "Access RSS feed reader at: http://$(hostname -I | awk '{print $1}'):5000/feed"

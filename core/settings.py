@@ -1,5 +1,10 @@
 import python_weather
 import tzlocal
+import sys
+import os
+
+# Add parent directory to path to import local_settings from project root
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
     from local_settings import DRIVER

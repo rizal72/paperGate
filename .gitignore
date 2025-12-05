@@ -43,3 +43,11 @@ cache/*
 # Temporary files
 /tmp/
 *.tmp
+*.*.*
+
+# Work in progress / development
+branding/
+
+# Claude Code files (project-specific AI assistance)
+.claude/
+CLAUDE.md

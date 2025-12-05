@@ -1,17 +1,18 @@
 /* Modern Design for paperGate Web */
 
 :root {
-    --primary: #2563eb;
-    --primary-dark: #1e40af;
-    --secondary: #64748b;
+    --primary: #94a3b8;          /* Blu-grigio slate from logo */
+    --primary-dark: #6b7280;     /* Grigio medio from logo */
+    --accent: #f5a5a5;           /* Rosso pastello from logo */
+    --secondary: #6b7280;
     --success: #10b981;
     --danger: #ef4444;
     --warning: #f59e0b;
-    --info: #06b6d4;
-    --dark: #1e293b;
+    --info: #94a3b8;
+    --dark: #374151;
     --light: #f8fafc;
-    --border: #e2e8f0;
-    --shadow: rgba(0, 0, 0, 0.1);
+    --border: #e5e7eb;
+    --shadow: rgba(0, 0, 0, 0.08);
     --radius: 0.5rem;
 }
 
@@ -22,10 +23,11 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     min-height: 100vh;
     padding: 1rem;
+    letter-spacing: -0.01em;
 }
 
 .container {
@@ -47,16 +49,30 @@ body {
     gap: 1rem;
 }
 
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-logo {
+    height: 64px;
+    width: auto;
+    flex-shrink: 0;
+}
+
 .header h1 {
     font-size: 1.75rem;
     font-weight: 700;
     color: var(--dark);
     margin: 0;
+    letter-spacing: 0.02em;
 }
 
 .header-links {
     display: flex;
     gap: 1rem;
+    align-items: center;
 }
 
 .header-links a {
@@ -64,10 +80,11 @@ body {
     text-decoration: none;
     font-size: 0.875rem;
     transition: color 0.2s;
+    font-weight: 500;
 }
 
 .header-links a:hover {
-    color: var(--primary);
+    color: var(--accent);
 }
 
 /* Flash Messages */
@@ -124,12 +141,13 @@ body {
 }
 
 .card-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: var(--dark);
     margin-bottom: 1.5rem;
     padding-bottom: 0.75rem;
     border-bottom: 2px solid var(--border);
+    letter-spacing: 0.02em;
 }
 
 /* Control Buttons */
@@ -155,13 +173,14 @@ body {
     padding: 0.875rem 1.5rem;
     border: none;
     border-radius: var(--radius);
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     text-decoration: none;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
     display: inline-block;
+    letter-spacing: 0.01em;
 }
 
 .btn-primary {
@@ -182,6 +201,17 @@ body {
 
 .btn-secondary:hover {
     background: #475569;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--shadow);
+}
+
+.btn-accent {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-accent:hover {
+    background: #f28b8b;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px var(--shadow);
 }
@@ -318,6 +348,15 @@ select.form-control:hover {
         text-align: center;
     }
 
+    .header-brand {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .header-logo {
+        height: 52px;
+    }
+
     .header h1 {
         font-size: 1.5rem;
     }
@@ -363,6 +402,17 @@ select.form-control:hover {
     text-align: center;
     padding: 2rem 1rem;
     overflow: hidden;
+}
+
+.display-preview::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+    border-radius: var(--radius) var(--radius) 0 0;
 }
 
 .display-image-container {

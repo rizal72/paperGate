@@ -43,7 +43,6 @@ sudo ./scripts/install.sh
 
 # Edit configuration
 nano core/local_settings.py
-nano web/app.cfg
 
 # Start services using aliases
 pg-start
@@ -59,7 +58,9 @@ Access the web interface at: `http://your-pi-ip:5000`
 
 ## Configuration
 
-### Core Settings
+All configuration is managed in a single file: `core/local_settings.py`
+
+### Configuration File
 
 Edit `core/local_settings.py`:
 
@@ -89,26 +90,15 @@ CALENDAR_URLS = [
 # RSS Feed (displayed via webview screen)
 WEBVIEW_URL = 'http://localhost:5000/feed'
 WEBVIEW_SCALE = 0.8
-```
 
-### Web Interface Settings
-
-Edit `web/app.cfg`:
-
-```python
-# Authentication (change these!)
+# Web Interface Authentication (IMPORTANT: Change these!)
 AUTH_USERNAME = 'admin'
 AUTH_PASSWORD = 'your-secure-password'
 
-# Flask secret key
-SECRET_KEY = 'generate-a-random-secret-key'
-```
+# Flask secret key (generate with: python3 -c 'import os; print(os.urandom(16))')
+SECRET_KEY = b'your-secret-key-here'
 
-### RSS Feed Sources
-
-Edit the `FEEDS` list in `web/app.py` to customize news sources:
-
-```python
+# RSS Feed Sources
 FEEDS = [
     'https://www.ansa.it/sito/ansait_rss.xml',  # ANSA Italia
     'http://feeds.bbci.co.uk/news/rss.xml',     # BBC News

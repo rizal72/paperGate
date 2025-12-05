@@ -1,8 +1,0 @@
-# Flask secret key for session management
-# Generate with: python3 -c 'import os; print(os.urandom(16))'
-SECRET_KEY = b'your-secret-key-here'
-
-# HTTP Basic Auth credentials
-# IMPORTANT: Change these default values!
-AUTH_USERNAME = 'admin'
-AUTH_PASSWORD = 'changeme'

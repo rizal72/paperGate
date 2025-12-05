@@ -60,3 +60,19 @@ WEBVIEW_URL = 'http://localhost:5000/feed'  # Integrated RSS feed reader
 WEBVIEW_RELOAD_INTERVAL = 300  # Seconds between auto-refreshes (5 minutes)
 WEBVIEW_SCALE = 0.8  # Scale factor: 0.5 = shows 2x content, 0.25 = shows 4x content (smaller text)
 WEBVIEW_ORIENTATION = 'landscape'  # 'landscape' or 'portrait' - how the webpage is rendered
+
+# Web Interface Configuration
+# Flask secret key for session management
+# Generate with: python3 -c 'import os; print(os.urandom(16))'
+SECRET_KEY = b'your-secret-key-here'
+
+# HTTP Basic Auth credentials
+# IMPORTANT: Change these default values!
+AUTH_USERNAME = 'admin'
+AUTH_PASSWORD = 'changeme'
+
+# RSS Feed URLs for feed reader
+FEEDS = [
+    'https://www.ansa.it/sito/ansait_rss.xml',  # ANSA Italia
+    # Add more feeds here
+]

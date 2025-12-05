@@ -15,7 +15,6 @@ ENV/
 
 # Configuration files with sensitive data
 core/local_settings.py
-web/app.cfg
 
 # Runtime display screenshots (contain personal data)
 core/display/*.png

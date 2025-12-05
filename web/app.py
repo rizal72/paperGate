@@ -2,6 +2,7 @@ import logging
 import posix_ipc
 import re
 import os
+import sys
 from functools import wraps
 from datetime import datetime
 from flask import Flask, render_template, flash, redirect, request, Response, send_file, jsonify
@@ -9,9 +10,17 @@ import feedparser
 
 from system import System
 
+# Import settings from core/local_settings.py
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'core'))
+try:
+    import local_settings as settings
+except ImportError:
+    print("ERROR: local_settings.py not found in core/")
+    print("Please copy core/local_settings.py.example to core/local_settings.py and configure it")
+    sys.exit(1)
 
 app = Flask(__name__)
-app.config.from_pyfile("app.cfg")
+app.config['SECRET_KEY'] = settings.SECRET_KEY
 
 # Disable caching for development
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
@@ -32,18 +41,11 @@ except posix_ipc.PermissionsError:
     exit(1)
 
 
-# RSS Feed URLs for feed reader (integrato da epdtext-feed)
-FEEDS = [
-    'https://www.ansa.it/sito/ansait_rss.xml',  # ANSA Italia
-    # Add more feeds here
-]
-
-
 # Authentication decorator
 def check_auth(username, password):
     """Check if username/password combination is valid."""
-    return (username == app.config.get('AUTH_USERNAME', 'admin') and
-            password == app.config.get('AUTH_PASSWORD', 'changeme'))
+    return (username == settings.AUTH_USERNAME and
+            password == settings.AUTH_PASSWORD)
 
 
 def authenticate():
@@ -312,7 +314,7 @@ def feed_index():
     """RSS feed reader page - integrated from epdtext-feed"""
     articles = []
 
-    for feed_url in FEEDS:
+    for feed_url in settings.FEEDS:
         try:
             feed = feedparser.parse(feed_url)
             for entry in feed.entries[:10]:  # Get first 10 entries per feed

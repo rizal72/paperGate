@@ -49,6 +49,7 @@ AFFIRMATIONS = [
 WEATHER_LATITUDE = 45.4642   # Example: Milan, Italy
 WEATHER_LONGITUDE = 9.1900
 WEATHER_CITY_NAME = "Milano"  # City name to display
+WEATHER_CONTACT_EMAIL = "your.email@example.com"  # Required by Met.no Terms of Service
 # Refresh interval in seconds for weather updates
 WEATHER_REFRESH = 900
 

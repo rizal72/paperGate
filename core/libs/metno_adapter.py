@@ -14,21 +14,25 @@ logger = logging.getLogger(__name__)
 class MetnoAdapter:
     """Adapter to use Met.no provider from waveshare in paperGate"""
 
-    def __init__(self, latitude, longitude, user_agent="paperGate/1.0"):
+    def __init__(self, latitude, longitude, contact_email="user@example.com"):
         self.latitude = latitude
         self.longitude = longitude
-        self.user_agent = user_agent
+
+        # Construct User-Agent according to Met.no Terms of Service
+        # Format: "AppName/Version (contact@email.com)"
+        self.user_agent = f"paperGate/1.0 ({contact_email})"
 
         # Initialize Met.no provider
         # MetNo(metno_self_id, location_lat, location_long, units)
         self.provider = MetNo(
-            metno_self_id=user_agent,
+            metno_self_id=self.user_agent,
             location_lat=latitude,
             location_long=longitude,
             units="celsius"  # Always celsius for paperGate
         )
 
         self.weather_data = None
+        logger.info(f"Met.no adapter initialized with User-Agent: {self.user_agent}")
 
     def fetch_weather(self):
         """Fetch weather from Met.no API"""

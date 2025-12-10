@@ -13,6 +13,7 @@ IMAGES_DIR = os.path.join(PROJECT_ROOT, 'images')
 WEATHER_LATITUDE = getattr(settings, 'WEATHER_LATITUDE', 45.4642)  # Default: Milan
 WEATHER_LONGITUDE = getattr(settings, 'WEATHER_LONGITUDE', 9.1900)
 WEATHER_CITY_NAME = getattr(settings, 'WEATHER_CITY_NAME', 'Milano')  # Default: Milano
+WEATHER_CONTACT_EMAIL = getattr(settings, 'WEATHER_CONTACT_EMAIL', 'user@example.com')
 WEATHER_REFRESH = getattr(settings, 'WEATHER_REFRESH', 900)
 
 logger = logging.getLogger("pitftmanager.libs.weather")
@@ -29,9 +30,9 @@ class Weather(threading.Thread):
         super().__init__()
         self.name = "Weather"
         self.shutdown = threading.Event()
-        
-        # Initialize Met.no adapter
-        self.metno = MetnoAdapter(WEATHER_LATITUDE, WEATHER_LONGITUDE)
+
+        # Initialize Met.no adapter with contact email for Terms of Service compliance
+        self.metno = MetnoAdapter(WEATHER_LATITUDE, WEATHER_LONGITUDE, WEATHER_CONTACT_EMAIL)
         self.weather_data = None
 
     def run(self) -> None:

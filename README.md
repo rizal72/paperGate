@@ -331,8 +331,14 @@ Icons are rendered from SVG to 1-bit PNG for optimal e-paper display.
 
 ## Acknowledgments
 
-- Original epdtext project by [tsbarnes](https://github.com/tsbarnes/epdtext)
-- WaveShare for e-Paper drivers and weather icons
+This project combines and builds upon multiple open source projects:
+- **epdtext** by [tsbarnes](https://github.com/tsbarnes/epdtext) - Original e-paper display daemon
+- **epdtext-web** - Flask web interface for remote control
+- **epdtext-feed** - RSS feed reader optimized for e-paper
+- **waveshare-epaper-display** - Weather provider implementation and SVG icons
+
+Additional thanks to:
+- WaveShare for e-Paper drivers
 - Met.no (Norwegian Meteorological Institute) for weather API
 - Python community for amazing libraries
 

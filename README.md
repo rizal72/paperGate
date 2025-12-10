@@ -6,8 +6,6 @@
 
 Raspberry Pi gateway with e-Paper display for home network monitoring and control.
 
-![System Dashboard](screenshots/system.png)
-
 ## Features
 
 - 📟 **E-Paper Display**: WaveShare 2.7" e-Paper HAT showing system stats, weather, calendar, and more
@@ -18,6 +16,32 @@ Raspberry Pi gateway with e-Paper display for home network monitoring and contro
 - 📅 **Calendar Integration**: CalDAV/webcal support with event times and all-day detection
 - 🌦️ **Weather**: Met.no provider with 42 conditions and 60+ professional SVG icons
 - 🎲 **Fortune Cookies**: Random quotes and affirmations
+
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/dashboard.png" alt="Dashboard Screen" width="264">
+  <img src="screenshots/system.png" alt="System Screen" width="264">
+  <img src="screenshots/tailscale.png" alt="Tailscale Screen" width="264">
+</p>
+
+<p align="center">
+  <img src="screenshots/system_dashboard.png" alt="System Dashboard Screen" width="264">
+  <img src="screenshots/weather.png" alt="Weather Screen" width="264">
+  <img src="screenshots/calendar.png" alt="Calendar Screen" width="264">
+</p>
+
+**Dashboard**: Time, weather with SVG icon, and upcoming calendar events - auto-refreshes every minute.
+
+**System**: Raspberry Pi model, OS version, IP address, CPU temperature, and uptime.
+
+**Tailscale**: VPN status, local and Tailscale IPs, exit node availability, and connected peers.
+
+**System Dashboard**: Visual monitoring with pie charts for CPU, memory, temperature, and disk usage.
+
+**Weather**: Current conditions from Met.no with professional SVG icons (42 weather types, day/night distinction).
+
+**Calendar**: Upcoming events with start-end times (auto-hides times for all-day events).
 
 ## Quick Start
 

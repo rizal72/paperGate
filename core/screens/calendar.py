@@ -62,11 +62,11 @@ class Screen(AbstractScreen):
         # Calendar icon
         cal_icon = self._render_calendar_icon()
         if cal_icon:
-            self.image.paste(cal_icon, (10, 35))
+            self.image.paste(cal_icon, (10, 25))
 
         # Event list
         event_x = 10
-        y_position = 60
+        y_position = 50
         events_to_show = min(5, len(self.calendar.events))
 
         for i in range(events_to_show):

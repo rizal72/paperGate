@@ -21,12 +21,9 @@ core/display/*.png
 core/display/*.txt
 !core/display/.gitkeep
 
-# Runtime cache (temporary files, webshots, etc.)
-cache/*
+# Cache files and directories (runtime, weather, webshots, etc.)
+*cache*
 !cache/.gitkeep
-
-# Weather cache
-core/cache_weather.json
 
 # IDE
 .vscode/

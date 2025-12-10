@@ -86,20 +86,34 @@ All configuration is managed in a single file: `local_settings.py`
 
 ### Configuration File
 
-Edit `local_settings.py`:
+Create your configuration from the example file:
+
+```bash
+cp local_settings.py.example local_settings.py
+nano local_settings.py
+```
+
+**Use `local_settings.py.example` as your guide** - it contains all available settings with detailed comments and recommended defaults.
+
+Key settings to configure:
 
 ```python
-# Display driver
+# Display driver (check your WaveShare model)
 DRIVER = "epd2in7b_V2"
 
-# Screens to show (in order)
+# Network interface for local IP detection
+NETWORK_INTERFACE = 'eth0'  # or 'wlan0' for WiFi
+
+# Screens to show (recommended order)
 SCREENS = [
-    'system',
-    'tailscale',
-    'system_dashboard',
-    'weather',
-    'calendar',
-    'webview',  # Shows RSS feed from web interface
+    'dashboard',         # Combined view: time, weather, calendar
+    'system',           # Raspberry Pi info: model, OS, IP, temp, uptime
+    'tailscale',        # VPN status, IPs, exit node, connected peers
+    'system_dashboard',  # Visual monitoring: CPU, memory, temp, disk pie charts
+    'weather',          # Current weather from Met.no with SVG icons
+    'calendar',         # Upcoming calendar events with times
+    'webview',          # Shows RSS feed from web interface
+    'fortune',          # Random fortune cookies
 ]
 
 # Weather - Met.no provider (Norwegian Meteorological Institute)
@@ -120,7 +134,7 @@ WEBVIEW_SCALE = 0.8
 
 # Web Interface Authentication (IMPORTANT: Change these!)
 AUTH_USERNAME = 'admin'
-AUTH_PASSWORD = 'your-secure-password'
+AUTH_PASSWORD = 'changeme'
 
 # Flask secret key (generate with: python3 -c 'import os; print(os.urandom(16))')
 SECRET_KEY = b'your-secret-key-here'
@@ -128,11 +142,11 @@ SECRET_KEY = b'your-secret-key-here'
 # RSS Feed Sources
 FEEDS = [
     'https://www.ansa.it/sito/ansait_rss.xml',  # ANSA Italia
-    'http://feeds.bbci.co.uk/news/rss.xml',     # BBC News
     # Add more feeds here
 ]
 ```
 
+See `local_settings.py.example` for complete documentation of all available settings.
 ## Available Screens
 
 - **system**: Raspberry Pi model, OS, IP, temperature, uptime

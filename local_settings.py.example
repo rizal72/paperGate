@@ -1,6 +1,5 @@
-
 # Set to the appropriate driver for your Waveshare e-paper display
-DRIVER = "epd2in7b"
+DRIVER = "epd2in7b_V2"
 
 # Set to True to enable debug messages
 DEBUG = False
@@ -18,6 +17,9 @@ FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
 # How long to wait (in seconds) before automatically redrawing the screen
 TIME = 900
 
+# Network interface for local IP detection (e.g., 'eth0' for ethernet, 'wlan0' for WiFi)
+NETWORK_INTERFACE = 'eth0'
+
 # Note: you *must* define at least one calendar to use the 'calendar' screen,
 #       and at least one caldav calendar to use the 'tasks' screen.
 CALENDAR_URLS = [
@@ -29,14 +31,19 @@ CALENDAR_URLS = [
 CALENDAR_REFRESH = 900
 
 # Default timezone to use for calendar and tasks screens
-TIMEZONE = "UTC"
+TIMEZONE = Europe/Rome
 
 # See the `screens` directory for available screens, or create your own (see the wiki)
+# Recommended order: dashboard first for at-a-glance info, then detail screens
 SCREENS = [
-    'affirmations',
-    'calendar',
-    'fortune',
-    'system',
+    'dashboard',       # Combined view: time, weather, calendar
+    'system',         # Raspberry Pi info: model, OS, IP, temp, uptime
+    'tailscale',      # VPN status, IPs, exit node, connected peers
+    'system_dashboard',  # Visual monitoring: CPU, memory, temp, disk pie charts
+    'weather',        # Current weather from Met.no with SVG icons
+    'calendar',       # Upcoming calendar events with times
+    'webview',        # Shows RSS feed from web interface
+    'fortune',        # Random fortune cookies
 ]
 
 # The affirmations to display, include anything that would help to be occasionally reminded of!
@@ -44,14 +51,14 @@ AFFIRMATIONS = [
     '<list your affirmations here>',
 ]
 
-# City to display weather for
-# Weather configuration - Met.no provider (set your coordinates)
+# Weather configuration - Met.no provider (Norwegian Meteorological Institute)
+# Free, no API key required, works worldwide
 WEATHER_LATITUDE = 45.4642   # Example: Milan, Italy
 WEATHER_LONGITUDE = 9.1900
 WEATHER_CITY_NAME = "Milano"  # City name to display
 WEATHER_CONTACT_EMAIL = "your.email@example.com"  # Required by Met.no Terms of Service
 # Refresh interval in seconds for weather updates
-WEATHER_REFRESH = 900
+WEATHER_REFRESH = 900  # 15 minutes
 
 # Fortune command path
 FORTUNE_PATH = '/usr/games/fortune'

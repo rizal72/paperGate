@@ -47,13 +47,11 @@ class MetnoAdapter:
             return False
 
     def get_temperature(self):
-        """Get current temperature (average of min/max)"""
+        """Get current instantaneous temperature"""
         if not self.weather_data:
             return None
-        # Met.no provides min/max for 6-hour period, return average
-        temp_min = float(self.weather_data.get('temperatureMin', 0))
-        temp_max = float(self.weather_data.get('temperatureMax', 0))
-        return round((temp_min + temp_max) / 2, 1)
+        # Met.no provides instant air_temperature
+        return float(self.weather_data.get('temperature', 0))
 
     def get_temperature_range(self):
         """Get min/max temperature range"""

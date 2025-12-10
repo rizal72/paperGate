@@ -30,23 +30,65 @@ class Screen(AbstractScreen):
         self.draw_titlebar("Weather")
 
         if self.weather.weather_data:
-            # Weather icon (large, left-aligned with fixed margin)
-            icon_size = 85
-            icon_x = 10  # Fixed left margin
-            icon_y = 35
+            # Calculate centered block of icon + temperature
+            icon_size = 70
+            gap_between = 8  # Gap between icon and temperature
+
+            # Get current temperature and range separately
+            temp_current = self.weather.get_temperature()
+            temp_current_text = f"{int(round(temp_current))}°" if temp_current != "--" else "--"
+
+            # Get min/max range with arrows (reduced by 60% total - 30% twice)
+            temp_min, temp_max = self.weather.metno.get_temperature_range()
+            if temp_min is not None and temp_max is not None:
+                temp_range_text = f"(↑{int(round(temp_max))}°↓{int(round(temp_min))}°)"
+            else:
+                temp_range_text = ""
+
+            # Calculate widths for layout
+            temp_current_font = ImageFont.truetype(settings.BOLD_FONT, 32)
+            temp_current_bbox = temp_current_font.getbbox(temp_current_text)
+            temp_current_width = temp_current_bbox[2] - temp_current_bbox[0]
+            temp_current_height = temp_current_bbox[3] - temp_current_bbox[1]
+
+            temp_range_font = ImageFont.truetype(settings.BOLD_FONT, 15)  # 60% smaller total
+            temp_range_bbox = temp_range_font.getbbox(temp_range_text)
+            temp_range_width = temp_range_bbox[2] - temp_range_bbox[0]
+            temp_range_height = temp_range_bbox[3] - temp_range_bbox[1]
+
+            # Calculate total width of icon + gap + current temp + range
+            total_width = icon_size + gap_between + temp_current_width + temp_range_width
+
+            # Center the entire block horizontally and vertically
+            block_x = (self.image.size[0] - total_width) // 2
+
+            # Calculate vertical centering (between titlebar and description)
+            available_height = self.image.size[1] - 30  # Account for titlebar
+            block_height = icon_size
+            block_y = (available_height - block_height) // 3 + 30 - 10  # Center in upper portion, raised 10px
+
+            # Weather icon (left side of block)
+            icon_x = block_x
+            icon_y = block_y
             icon_image = self.weather.get_icon_image(size=icon_size)
             if icon_image:
                 self.image.paste(icon_image, (icon_x, icon_y))
 
-            # High/low temperature (BOLD, right-aligned)
-            temp_text = str(self.weather.get_temperature_high_low())
-            temp_font = ImageFont.truetype(settings.BOLD_FONT, 40)
-            temp_bbox = temp_font.getbbox(temp_text)
-            temp_width = temp_bbox[2] - temp_bbox[0]
-            temp_x = self.image.size[0] - temp_width - 10  # Right-aligned with 10px margin
-            temp_y = icon_y + 20  # Vertically aligned with icon center
-            self.text(temp_text, font_size=40, position=(temp_x, temp_y),
+            # Current temperature (right side of icon, BOLD, large)
+            # Align with icon, with slight offset to compensate SVG internal margin
+            temp_current_x = icon_x + icon_size + gap_between
+            temp_current_y = icon_y + (icon_size - temp_current_height) // 2 - 4  # Raised 4px for SVG margin
+            self.text(temp_current_text, font_size=32, position=(temp_current_x, temp_current_y),
                      font_name=settings.BOLD_FONT)
+
+            # Min/max range (right of current temp, BOLD, smaller - 60% reduction total)
+            # Aligned to same baseline as current temp
+            if temp_range_text:
+                temp_range_x = temp_current_x + temp_current_width
+                # Baseline alignment: align bottom of bboxes (approximates baseline alignment)
+                temp_range_y = temp_current_y + (temp_current_height - temp_range_height)
+                self.text(temp_range_text, font_size=15, position=(temp_range_x, temp_range_y),
+                         font_name=settings.BOLD_FONT)
 
             # Weather description (regular, centered below icon+temp)
             desc_text = str(self.weather.get_sky_text())

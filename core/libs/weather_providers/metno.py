@@ -138,8 +138,9 @@ class MetNo(BaseWeatherProvider):
         weather_code = weather_data["next_6_hours"]["summary"]["symbol_code"].replace("_day", "").replace("_night", "")
         daytime = self.is_daytime(self.location_lat, self.location_long)
 
-        # { "temperatureMin": "2.0", "temperatureMax": "15.1", "icon": "mostly_cloudy", "description": "Cloudy with light breezes" }
+        # { "temperature": "5.7", "temperatureMin": "2.0", "temperatureMax": "15.1", "icon": "mostly_cloudy", "description": "Cloudy" }
         weather = {}
+        weather["temperature"] = weather_data["instant"]["details"]["air_temperature"]
         weather["temperatureMin"] = weather_data["next_6_hours"]["details"]["air_temperature_min"]
         weather["temperatureMax"] = weather_data["next_6_hours"]["details"]["air_temperature_max"]
         weather["icon"] = self.get_icon_from_metno_weathercode(weather_code, daytime)

@@ -97,6 +97,20 @@ class Weather(threading.Thread):
             return f"{int(round(temp_max))}°/{int(round(temp_min))}°"
         return "--"
 
+    def get_temperature_with_range(self):
+        """
+        Get current temperature with min/max range formatted as "current° (↑max° ↓min°)"
+        :return: String like "6° (↑9° ↓7°)" or "--"
+        """
+        if not self.weather_data:
+            return "--"
+
+        temp_current = self.metno.get_temperature()
+        temp_min, temp_max = self.metno.get_temperature_range()
+        if temp_current is not None and temp_min is not None and temp_max is not None:
+            return f"{int(round(temp_current))}° (↑{int(round(temp_max))}° ↓{int(round(temp_min))}°)"
+        return "--"
+
     def get_sky_text(self):
         """
         Get the weather description

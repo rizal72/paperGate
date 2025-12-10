@@ -109,8 +109,9 @@ class Screen(AbstractScreen):
         if icon_image:
             self.image.paste(icon_image, (icon_x, icon_y))
 
-        # Temperature below icon (BOLD, larger, centered in left section)
-        temp_text = str(self.weather.get_temperature_high_low())
+        # Current temperature below icon (BOLD, larger, centered in left section)
+        temp = self.weather.get_temperature()
+        temp_text = f"{int(round(temp))}°" if temp != "--" else "--"
         temp_font = ImageFont.truetype(settings.BOLD_FONT, 18)
         temp_bbox = temp_font.getbbox(temp_text)
         temp_width = temp_bbox[2] - temp_bbox[0]

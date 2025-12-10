@@ -82,7 +82,7 @@ class Screen(AbstractScreen):
         day_font = ImageFont.truetype(settings.BOLD_FONT, 17)
         day_bbox = day_font.getbbox(day_text)
         day_width = day_bbox[2] - day_bbox[0]
-        day_x = self.image.size[0] - day_width - 5  # 5px margin from right
+        day_x = self.image.size[0] - day_width - 8  # 8px margin from right (increased from 5px)
         self.text(day_text, font_size=17, position=(day_x, 5), font_name=settings.BOLD_FONT)
 
         # Date (right-aligned)
@@ -90,14 +90,14 @@ class Screen(AbstractScreen):
         date_font = ImageFont.truetype(settings.FONT, 15)
         date_bbox = date_font.getbbox(date_text)
         date_width = date_bbox[2] - date_bbox[0]
-        date_x = self.image.size[0] - date_width - 5  # 5px margin from right
+        date_x = self.image.size[0] - date_width - 8  # 8px margin from right (increased from 5px)
         self.text(date_text, font_size=15, position=(date_x, 25))
 
         # === BOTTOM SECTION (split at 1/3 width) ===
 
         # Vertical divider at x=88 (264/3) - waveshare at x=301 (800*0.375)
         divider_x = 88
-        self.line((divider_x, 50, divider_x, self.image.size[1]), width=2)
+        self.line((divider_x, 50, divider_x, self.image.size[1] - 8), width=2)  # Stop 8px from bottom
 
         # === LEFT: Weather (0-88) ===
 

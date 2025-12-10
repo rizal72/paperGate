@@ -17,7 +17,11 @@ def get_network_interface():
     if _NETWORK_INTERFACE is None:
         try:
             # Read local_settings.py as text to avoid circular imports
-            local_settings_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "local_settings.py")
+            # local_settings.py is in project root (3 levels up from core/libs/tailscale.py)
+            local_settings_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                "local_settings.py"
+            )
             if os.path.exists(local_settings_path):
                 with open(local_settings_path, 'r') as f:
                     for line in f:

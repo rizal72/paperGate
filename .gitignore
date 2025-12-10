@@ -25,6 +25,9 @@ core/display/*.txt
 cache/*
 !cache/.gitkeep
 
+# Weather cache
+core/cache_weather.json
+
 # IDE
 .vscode/
 .idea/

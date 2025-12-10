@@ -31,7 +31,7 @@ class Screen(AbstractScreen):
             icon_path = os.path.join(IMAGES_DIR, 'tailscale.png')
             icon = Image.open(icon_path)
             icon = icon.resize((55, 55))
-            self.image.paste(icon, (5, 25))
+            self.image.paste(icon, (1, 25))
         except FileNotFoundError:
             logging.warning(f"Tailscale icon not found at {icon_path}")
 
@@ -66,7 +66,7 @@ class Screen(AbstractScreen):
             string += 'Exit Node: - Disabled'
 
         # Draw the status information (larger font, adjusted for bigger logo)
-        self.text(string, font_size=13, font_name=settings.MONOSPACE_FONT, position=(73, 25), wrap=False)
+        self.text(string, font_size=13, font_name=settings.MONOSPACE_FONT, position=(66, 25), wrap=False)
 
         # Horizontal divider
         self.line((5, 105, self.display.get_size()[0] - 5, 105), width=1)

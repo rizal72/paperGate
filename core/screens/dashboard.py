@@ -120,16 +120,41 @@ class Screen(AbstractScreen):
         self.text(temp_text, font_size=18, position=(temp_x, temp_y),
                  font_name=settings.BOLD_FONT)
 
-        # Description below temp (centered in left section, compact)
+        # Description below temp (multi-line with tight spacing if needed)
         desc_text = str(self.weather.get_sky_text())
-        if len(desc_text) > 10:
-            desc_text = desc_text[:8] + ".."
         desc_font = ImageFont.truetype(settings.FONT, 11)
-        desc_bbox = desc_font.getbbox(desc_text)
-        desc_width = desc_bbox[2] - desc_bbox[0]
-        desc_x = (divider_x - desc_width) // 2  # Center in left section
-        desc_y = temp_y + 20  # 20px gap below temperature (reduced spacing)
-        self.text(desc_text, font_size=11, position=(desc_x, desc_y))
+        desc_y_start = temp_y + 20  # 20px gap below temperature
+
+        # Word wrap for descriptions longer than section width
+        max_width = divider_x - 10  # Leave 5px margin on each side
+        words = desc_text.split()
+        lines = []
+        current_line = []
+
+        for word in words:
+            test_line = ' '.join(current_line + [word])
+            test_bbox = desc_font.getbbox(test_line)
+            test_width = test_bbox[2] - test_bbox[0]
+
+            if test_width <= max_width:
+                current_line.append(word)
+            else:
+                if current_line:
+                    lines.append(' '.join(current_line))
+                current_line = [word]
+
+        if current_line:
+            lines.append(' '.join(current_line))
+
+        # Render each line centered with tight line spacing
+        line_spacing = 2  # Tight spacing between lines
+        for i, line in enumerate(lines[:2]):  # Max 2 lines to avoid overflow
+            line_bbox = desc_font.getbbox(line)
+            line_width = line_bbox[2] - line_bbox[0]
+            line_height = line_bbox[3] - line_bbox[1]
+            line_x = (divider_x - line_width) // 2  # Center in left section
+            line_y = desc_y_start + i * (line_height + line_spacing)
+            self.text(line, font_size=11, position=(line_x, line_y))
 
         # === RIGHT: Calendar (88-264) ===
 

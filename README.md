@@ -15,8 +15,8 @@ Raspberry Pi gateway with e-Paper display for home network monitoring and contro
 - 📰 **RSS Feed Reader**: E-paper optimized news feed viewer (integrated in web interface)
 - 🔐 **Tailscale Gateway**: Monitor VPN status and connected peers
 - 📊 **System Dashboard**: Visual monitoring with CPU, memory, temperature, disk usage
-- 📅 **Calendar Integration**: CalDAV/webcal support for events and tasks
-- 🌦️ **Weather**: Current conditions and forecast
+- 📅 **Calendar Integration**: CalDAV/webcal support with event times and all-day detection
+- 🌦️ **Weather**: Met.no provider with 42 conditions and 60+ professional SVG icons
 - 🎲 **Fortune Cookies**: Random quotes and affirmations
 
 ## Quick Start
@@ -78,9 +78,12 @@ SCREENS = [
     'webview',  # Shows RSS feed from web interface
 ]
 
-# Weather
-WEATHER_CITY = "Your City"
-WEATHER_FORMAT = python_weather.METRIC
+# Weather - Met.no provider (Norwegian Meteorological Institute)
+WEATHER_LATITUDE = 45.4642   # Your location coordinates
+WEATHER_LONGITUDE = 9.1900
+WEATHER_CITY_NAME = "Milano"  # City name to display
+WEATHER_CONTACT_EMAIL = "your.email@example.com"  # Required by Met.no Terms of Service
+WEATHER_REFRESH = 900  # Update interval in seconds (15 min)
 
 # Calendar (webcal or CalDAV)
 CALENDAR_URLS = [
@@ -111,10 +114,10 @@ FEEDS = [
 - **system**: Raspberry Pi model, OS, IP, temperature, uptime
 - **tailscale**: VPN status, IPs, exit node, connected peers
 - **system_dashboard**: Visual CPU/memory/temp/disk dashboard with pie charts
-- **weather**: Current weather and forecast
-- **calendar**: Upcoming calendar events
+- **weather**: Current weather from Met.no with SVG icons (42 conditions, day/night distinction)
+- **calendar**: Upcoming calendar events with start-end times (auto-hides times for all-day events)
 - **tasks**: Todo list from CalDAV
-- **dashboard**: Combined info view
+- **dashboard**: Combined info view with auto-refresh (time, weather, calendar)
 - **fortune**: Random fortune cookies
 - **affirmations**: Positive affirmations
 - **webview**: Display webpages (shows RSS feed by default)
@@ -168,12 +171,17 @@ paperGate/
 │   ├── app.py      # Core application
 │   ├── screens/    # Screen modules
 │   ├── libs/       # Supporting libraries
+│   │   ├── weather_providers/  # Weather provider modules (Met.no, OpenWeatherMap, etc.)
+│   │   ├── calendar_events.py  # Calendar integration
+│   │   ├── metno_adapter.py    # Met.no weather adapter
+│   │   └── weather_utility.py  # Weather API caching
 │   └── display/    # Runtime screenshots (gitignored)
 ├── web/            # Flask web interface (includes RSS feed reader)
 │   ├── app.py      # Web app + /feed endpoint
 │   └── templates/  # HTML templates
+├── icons/          # Weather SVG icons (60+ professional icons)
 ├── cache/          # Runtime temporary files (gitignored)
-├── images/         # Shared assets (logos, icons)
+├── images/         # Shared assets (logos, fallback PNG icons)
 ├── systemd/        # Service definitions (2 services)
 └── scripts/        # Installation automation
 ```
@@ -235,10 +243,60 @@ Contributions welcome! Please read [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) fi
 
 MIT License - see [LICENSE](LICENSE)
 
+## Weather System
+
+paperGate uses **Met.no** (Norwegian Meteorological Institute) for weather data:
+
+### Features
+- 🌍 **42 weather conditions** (vs 18 with previous provider) - better granularity
+- 🎨 **60+ professional SVG icons** - sharp, scalable vector graphics
+- 🌓 **Day/night distinction** - different icons for daytime vs nighttime
+- 🆓 **Free, no API key** - reliable Norwegian Met Institute service
+- 📍 **Coordinate-based** - works anywhere in the world
+
+### Configuration
+
+Weather is configured in `local_settings.py`:
+
+```python
+WEATHER_LATITUDE = 45.4642    # Your coordinates
+WEATHER_LONGITUDE = 9.1900
+WEATHER_CITY_NAME = "Milano"
+WEATHER_CONTACT_EMAIL = "your.email@example.com"  # Required by Met.no ToS
+WEATHER_REFRESH = 900  # Update every 15 minutes
+```
+
+**Important**: Met.no Terms of Service require providing a contact email in the User-Agent. This is used only if they need to contact you about API usage issues.
+
+### Display Layouts
+
+**Dashboard Screen** (auto-refreshes every minute):
+- Large weather icon (50px) centered in left section
+- Bold temperature display (high°/low°)
+- Weather description below
+- Compact spacing optimized for e-paper
+
+**Weather Screen**:
+- Extra large icon (85px) on left
+- Bold temperature (40px) right-aligned
+- Description and city name centered below
+
+### Icon Examples
+
+Met.no provides detailed conditions:
+- `clear_sky_day.svg` / `clearnight.svg` - Clear skies (day/night)
+- `rain_heavy.svg` / `rain_light.svg` - Rain intensity levels
+- `snow_heavy.svg` / `snow_light.svg` - Snow intensity levels
+- `mostly_cloudy.svg` / `partly_cloudy_day.svg` - Cloud coverage
+- And 50+ more...
+
+Icons are rendered from SVG to 1-bit PNG for optimal e-paper display.
+
 ## Acknowledgments
 
 - Original epdtext project by [tsbarnes](https://github.com/tsbarnes/epdtext)
-- WaveShare for e-Paper drivers
+- WaveShare for e-Paper drivers and weather icons
+- Met.no (Norwegian Meteorological Institute) for weather API
 - Python community for amazing libraries
 
 ## Support

@@ -1,4 +1,3 @@
-import python_weather
 import tzlocal
 import sys
 import os
@@ -98,11 +97,6 @@ try:
     from local_settings import WEATHER_CITY
 except ImportError:
     WEATHER_CITY = "Richmond, VA"
-
-try:
-    from local_settings import WEATHER_FORMAT
-except ImportError:
-    WEATHER_FORMAT = python_weather.IMPERIAL
 
 try:
     from local_settings import WEATHER_REFRESH

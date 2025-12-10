@@ -1,4 +1,3 @@
-import python_weather
 
 # Set to the appropriate driver for your Waveshare e-paper display
 DRIVER = "epd2in7b"
@@ -46,9 +45,10 @@ AFFIRMATIONS = [
 ]
 
 # City to display weather for
-WEATHER_CITY = "Ladysmith, VA"
-# Format for weather output
-WEATHER_FORMAT = python_weather.IMPERIAL
+# Weather configuration - Met.no provider (set your coordinates)
+WEATHER_LATITUDE = 45.4642   # Example: Milan, Italy
+WEATHER_LONGITUDE = 9.1900
+WEATHER_CITY_NAME = "Milano"  # City name to display
 # Refresh interval in seconds for weather updates
 WEATHER_REFRESH = 900
 

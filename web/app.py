@@ -95,11 +95,11 @@ def get_available_screens():
 # Get active screens from local_settings.py
 def get_active_screens():
     """
-    Read active screen list from ../core/local_settings.py.
+    Read active screen list from ../local_settings.py (project root).
     Parses the SCREENS list from the settings file.
     Returns a list of currently active screen names.
     """
-    settings_file = os.path.join(os.path.dirname(__file__), '..', 'core', 'local_settings.py')
+    settings_file = os.path.join(os.path.dirname(__file__), '..', 'local_settings.py')
     active_screens = []
 
     try:

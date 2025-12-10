@@ -110,10 +110,12 @@ class Calendar(threading.Thread):
                                     end=datetime.today() + timedelta(days=14))
             for event in timeline:
                 start = event.start
+                end = event.end if hasattr(event, 'end') else None
                 summary = event.summary
 
                 new_events.append({
                     'start': start,
+                    'end': end,
                     'summary': summary
                 })
         except ValueError as error:
@@ -165,8 +167,15 @@ class Calendar(threading.Thread):
                 start = self.standardize_date(event.vobject_instance.vevent.dtstart.value)
                 summary = event.vobject_instance.vevent.summary.value
 
+                # Get end time if available
+                try:
+                    end = self.standardize_date(event.vobject_instance.vevent.dtend.value)
+                except AttributeError:
+                    end = None
+
                 new_events.append({
                     'start': start,
+                    'end': end,
                     'summary': summary
                 })
 

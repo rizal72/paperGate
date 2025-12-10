@@ -10,7 +10,7 @@ import posix_ipc
 
 import settings
 from libs import epd
-from libs.calendar import Calendar, get_calendar
+from libs.calendar_events import Calendar, get_calendar
 from libs.epd import EPD, get_epd
 from libs.weather import Weather, get_weather, update_weather
 from settings import TIME, SCREENS, DEBUG, LOGFILE
@@ -186,7 +186,7 @@ class App:
         self.calendar.get_latest_events()
 
         self._show_loading("Loading weather...")
-        asyncio.run(self.weather.update())
+        self.weather.update()
 
         self.calendar.start()
         self.weather.start()

@@ -1,6 +1,6 @@
 import humanize
 
-from libs.calendar import Calendar, get_calendar
+from libs.calendar_events import Calendar, get_calendar
 from screens import AbstractScreen
 
 

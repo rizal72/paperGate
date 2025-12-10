@@ -1,6 +1,6 @@
 import logging
 
-from libs.calendar import Calendar, get_calendar, update_calendar
+from libs.calendar_events import Calendar, get_calendar, update_calendar
 from screens import AbstractScreen
 
 

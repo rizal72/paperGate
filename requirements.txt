@@ -30,3 +30,8 @@ distro>=1.7.0
 
 # Webview screen
 htmlwebshot>=0.1.0
+
+# Met.no weather provider and SVG rendering
+cairosvg>=2.5.0
+astral>=2.2
+requests>=2.25.0

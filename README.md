@@ -220,6 +220,7 @@ paperGate/
 ├── icons/          # Weather SVG icons (60+ professional icons)
 ├── cache/          # Runtime temporary files (gitignored)
 ├── images/         # Shared assets (logos, fallback PNG icons)
+├── screenshots/    # Documentation screenshots (for README)
 ├── systemd/        # Service definitions (2 services)
 └── scripts/        # Installation automation
 ```
@@ -229,8 +230,6 @@ paperGate/
 **Services**:
 - `papergate.service` - Core e-paper display daemon
 - `papergate-web.service` - Web interface + RSS feed reader (single Flask app on port 5000)
-
-## Troubleshooting
 
 ### Display not updating
 - Check SPI is enabled: `ls /dev/spi*`

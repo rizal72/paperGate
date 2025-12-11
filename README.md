@@ -49,7 +49,7 @@ Raspberry Pi gateway with e-Paper display for home network monitoring and contro
 
 - Raspberry Pi (tested on Pi 4)
 - WaveShare 2.7in e-Paper HAT (V2)
-- Raspberry Pi OS (Bookworm or later)
+- Raspberry Pi OS (Bullseye or later)
 - SPI interface enabled (`sudo raspi-config` → Interface Options → SPI)
 
 ### Installation

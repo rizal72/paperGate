@@ -69,22 +69,21 @@ class Screen(AbstractScreen):
         self.text(string, font_size=13, font_name=settings.MONOSPACE_FONT, position=(66, 25), wrap=False)
 
         # Horizontal divider
-        self.line((5, 105, self.display.get_size()[0] - 5, 105), width=1)
+        self.line((5, 95, self.display.get_size()[0] - 5, 95), width=1)
 
         # BOTTOM: Peers section
         peers_count = self.tailscale.peers_online
         peers_header = f'Peers:     {peers_count} online'
-        self.text(peers_header, font_size=13, font_name=settings.MONOSPACE_FONT, position=(5, 111), wrap=False)
+        self.text(peers_header, font_size=13, font_name=settings.MONOSPACE_FONT, position=(5, 101), wrap=False)
 
-        # Peer list (3 columns, up to 9 peers)
+        # Peer list (2 columns at 50% width each)
         peer_names = self.tailscale.peer_names
         if peer_names:
             col1_x = 8
-            col2_x = 93
-            col3_x = 178
-            peer_y = 130
+            col2_x = 140  # Roughly 50% of 264px width for better spacing
+            peer_y = 120
             col_height = 10
-            peers_per_col = 3
+            peers_per_col = 5  # 5 peers per column (10 total max)
 
             for idx, peer in enumerate(peer_names):
                 col = idx // peers_per_col
@@ -92,10 +91,8 @@ class Screen(AbstractScreen):
 
                 if col == 0:
                     x = col1_x
-                elif col == 1:
-                    x = col2_x
                 else:
-                    x = col3_x
+                    x = col2_x
 
                 y = peer_y + row * col_height
                 self.text(f'• {peer}', font_size=10, position=(x, y), wrap=False)

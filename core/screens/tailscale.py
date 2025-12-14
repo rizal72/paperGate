@@ -85,7 +85,12 @@ class Screen(AbstractScreen):
             col_height = 10
             peers_per_col = 5  # 5 peers per column (10 total max)
 
-            for idx, peer in enumerate(peer_names):
+            # Limit to 9 peers + "more" indicator if there are more than 10
+            display_peers = peer_names[:9] if len(peer_names) > 10 else peer_names
+            if len(peer_names) > 10:
+                display_peers.append(f'+{len(peer_names) - 9} more...')
+
+            for idx, peer in enumerate(display_peers):
                 col = idx // peers_per_col
                 row = idx % peers_per_col
 

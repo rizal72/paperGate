@@ -3,7 +3,6 @@ import posix_ipc
 import re
 import os
 import sys
-from functools import wraps
 from datetime import datetime
 from flask import Flask, render_template, flash, redirect, request, Response, send_file, jsonify
 import feedparser
@@ -39,33 +38,6 @@ try:
 except posix_ipc.PermissionsError:
     logging.error("couldn't open message queue")
     exit(1)
-
-
-# Authentication decorator
-def check_auth(username, password):
-    """Check if username/password combination is valid."""
-    return (username == settings.AUTH_USERNAME and
-            password == settings.AUTH_PASSWORD)
-
-
-def authenticate():
-    """Sends a 401 response that enables basic auth."""
-    return Response(
-        'Authentication required. Please login to access paperGate Web.',
-        401,
-        {'WWW-Authenticate': 'Basic realm="paperGate Web"'}
-    )
-
-
-def requires_auth(f):
-    """Decorator to require HTTP Basic Auth on routes."""
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
-        return f(*args, **kwargs)
-    return decorated
 
 
 # Get available screens from core/screens directory
@@ -140,7 +112,6 @@ def validate_screen_name(screen_name):
 
 
 @app.route('/')
-@requires_auth
 def index():
     available_screens = get_available_screens()
     active_screens = get_active_screens()
@@ -154,7 +125,6 @@ def index():
 
 
 @app.route('/next_screen')
-@requires_auth
 def next_screen():
     mq.send("next", timeout=10)
     flash("Sent 'next' message to paperGate")
@@ -162,7 +132,6 @@ def next_screen():
 
 
 @app.route('/previous_screen')
-@requires_auth
 def previous_screen():
     mq.send("previous", timeout=10)
     flash("Sent 'previous' message to paperGate")
@@ -170,7 +139,6 @@ def previous_screen():
 
 
 @app.route('/button0')
-@requires_auth
 def button0():
     mq.send("button0", timeout=10)
     flash("Sent 'KEY1' message to paperGate")
@@ -178,7 +146,6 @@ def button0():
 
 
 @app.route('/button1')
-@requires_auth
 def button1():
     mq.send("button1", timeout=10)
     flash("Sent 'KEY2' message to paperGate")
@@ -186,7 +153,6 @@ def button1():
 
 
 @app.route('/button2')
-@requires_auth
 def button2():
     mq.send("button2", timeout=10)
     flash("Sent 'KEY3' message to paperGate")
@@ -194,7 +160,6 @@ def button2():
 
 
 @app.route('/button3')
-@requires_auth
 def button3():
     mq.send("button3", timeout=10)
     flash("Sent 'KEY4' message to paperGate")
@@ -202,7 +167,6 @@ def button3():
 
 
 @app.route('/reload')
-@requires_auth
 def reload():
     mq.send("reload", timeout=10)
     flash("Sent 'reload' message to paperGate")
@@ -210,7 +174,6 @@ def reload():
 
 
 @app.route('/screen')
-@requires_auth
 def screen():
     screen_name = request.args.get('screen')
     screen_name = validate_screen_name(screen_name)
@@ -223,7 +186,6 @@ def screen():
 
 
 @app.route('/add_screen')
-@requires_auth
 def add_screen():
     screen_name = request.args.get('screen')
     screen_name = validate_screen_name(screen_name)
@@ -239,7 +201,6 @@ def add_screen():
 
 
 @app.route('/remove_screen')
-@requires_auth
 def remove_screen():
     screen_name = request.args.get('screen')
     screen_name = validate_screen_name(screen_name)
@@ -255,7 +216,6 @@ def remove_screen():
 
 
 @app.route('/display_screenshot/<screen_name>')
-@requires_auth
 def display_screenshot(screen_name):
     """Serve a screenshot for a specific screen with no-cache headers."""
     # Validate screen name (security)
@@ -288,7 +248,6 @@ def display_screenshot(screen_name):
 
 
 @app.route('/current_screen_name')
-@requires_auth
 def current_screen_name():
     """Return the name of the currently displayed screen."""
     current_screen_file = os.path.join(

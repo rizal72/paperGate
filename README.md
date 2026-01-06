@@ -132,9 +132,8 @@ CALENDAR_URLS = [
 WEBVIEW_URL = 'http://localhost:5000/feed'
 WEBVIEW_SCALE = 0.8
 
-# Web Interface Authentication (IMPORTANT: Change these!)
-AUTH_USERNAME = 'admin'
-AUTH_PASSWORD = 'changeme'
+# Web Interface Security
+# No authentication required - secure your network with VPN (e.g., Tailscale)
 
 # Flask secret key (generate with: python3 -c 'import os; print(os.urandom(16))')
 SECRET_KEY = b'your-secret-key-here'

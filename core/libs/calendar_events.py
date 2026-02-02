@@ -223,6 +223,9 @@ class Calendar(threading.Thread):
             else:
                 logger.error("calendar type not recognized: {0}".format(str(connection["type"])))
 
+        # Filter out past events - keep only today and future
+        new_events = [e for e in new_events if e["start"].date() >= date.today()]
+
         new_events.sort(key=sort_by_date)
         new_tasks.sort(key=sort_by_date)
 

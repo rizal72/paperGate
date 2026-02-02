@@ -2,6 +2,7 @@ import asyncio
 import importlib
 import logging
 import signal
+import socket
 import time
 import sys
 import os
@@ -161,6 +162,46 @@ class App:
         # Show on display
         self.epd.show(img)
 
+    def _wait_for_network(self, timeout=180):
+        """
+        Wait for network connectivity before attempting calendar/calendar downloads.
+        Tests both DNS resolution and TCP connection to reliable endpoints.
+
+        Args:
+            timeout: Maximum seconds to wait (default: 180 = 3 minutes)
+
+        Returns:
+            bool: True if network is available, False if timeout reached
+        """
+        self.logger.info("Waiting for network connectivity...")
+        start_time = time.time()
+
+        test_hosts = [
+            ('8.8.8.8', 53),  # Google DNS (TCP)
+            ('1.1.1.1', 53),  # Cloudflare DNS (TCP)
+        ]
+
+        while time.time() - start_time < timeout:
+            for host, port in test_hosts:
+                try:
+                    # Try TCP connection with short timeout
+                    sock = socket.create_connection((host, port), timeout=2)
+                    sock.close()
+                    self.logger.info(f"Network connectivity confirmed (connected to {host}:{port})")
+                    return True
+                except (socket.timeout, socket.error, OSError):
+                    continue
+
+            # Show waiting message every 5 seconds
+            elapsed = int(time.time() - start_time)
+            if elapsed % 5 == 0:
+                self._show_loading(f"Waiting network... ({elapsed}s)")
+
+            time.sleep(1)
+
+        self.logger.warning(f"Network wait timeout after {timeout}s - proceeding anyway")
+        return False
+
     def __init__(self):
         if DEBUG:
             logging.basicConfig(level=logging.DEBUG, filename=LOGFILE)
@@ -181,6 +222,9 @@ class App:
 
         self.mq = posix_ipc.MessageQueue("/epdtext_ipc", flags=posix_ipc.O_CREAT)
         self.mq.block = False
+
+        # Wait for network before loading calendar/weather
+        self._wait_for_network()
 
         self._show_loading("Loading calendar...")
         self.calendar.get_latest_events()

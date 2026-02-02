@@ -5,6 +5,41 @@ All notable changes to paperGate will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-02-02
+
+### Added
+
+- **Network resilience**: Robust handling of power recovery scenarios
+  - Wait-for-network at startup: App waits up to 3 minutes for network connectivity
+  - TCP connectivity testing to Google DNS (8.8.8.8:53) and Cloudflare (1.1.1.1:53)
+  - Real-time status on e-paper display: "Waiting network... (Xs)"
+- **Exponential backoff retry**: Automatic retry with backoff for failed network operations
+  - Retries on: ConnectionError, TimeoutError, SSLError, NewConnectionError, ServerNotFoundError
+  - Exponential backoff: 1s → 2s → 4s → 8s → 16s (max 60s delay)
+  - Maximum 5 retry attempts per operation
+  - Applies to: webcal fetch, CalDAV connection, calendar events, todos
+- **Systemd improvements**: Enhanced network-online.target integration
+
+### Changed
+
+- **Calendar events module**: Refactored with retry decorator pattern
+  - Separated network operations into retryable methods
+  - Graceful degradation when some calendars fail permanently
+- **Systemd service configuration**: Added `network-online.target` dependency
+
+### Fixed
+
+- **Power recovery startup**: App no longer hangs when Pi boots before router
+- **Network interruption handling**: App recovers automatically from temporary network glitches
+- **Calendar loading failures**: Multiple retry attempts prevent permanent failures
+
+### Technical Details
+
+Network resilience implementation:
+- **app.py**: Added `_wait_for_network()` method with configurable timeout
+- **calendar_events.py**: Added `@retry_with_backoff()` decorator for network operations
+- **Retry configuration**: `MAX_RETRY_ATTEMPTS=5`, `INITIAL_RETRY_DELAY=1s`, `MAX_RETRY_DELAY=60s`
+
 ## [2.0.0] - 2025-12-10
 
 ### Added

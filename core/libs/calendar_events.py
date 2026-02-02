@@ -2,6 +2,7 @@ import time
 import logging
 import threading
 from datetime import date, datetime, timedelta
+from functools import wraps
 
 import caldav
 import httplib2.error
@@ -14,6 +15,55 @@ from requests.exceptions import SSLError
 
 import settings
 from settings import TIMEZONE
+
+
+# Retry configuration
+MAX_RETRY_ATTEMPTS = 5
+INITIAL_RETRY_DELAY = 1  # seconds
+MAX_RETRY_DELAY = 60  # seconds
+
+
+def retry_with_backoff(max_attempts=MAX_RETRY_ATTEMPTS, initial_delay=INITIAL_RETRY_DELAY, max_delay=MAX_RETRY_DELAY):
+    """
+    Decorator for retrying functions with exponential backoff.
+    Retries on network-related exceptions only.
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            attempt = 0
+            delay = initial_delay
+
+            while attempt < max_attempts:
+                try:
+                    return func(*args, **kwargs)
+                except (
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                    requests.exceptions.SSLError,
+                    urllib3.exceptions.NewConnectionError,
+                    urllib3.exceptions.TimeoutError,
+                    urllib3.exceptions.ProtocolError,
+                    httplib2.error.ServerNotFoundError,
+                    httplib2.error.HttpLib2Error,
+                    OSError,  # Socket errors
+                    TimeoutError,
+                ) as e:
+                    attempt += 1
+                    if attempt >= max_attempts:
+                        logger.error(f"{func.__name__} failed after {max_attempts} attempts: {e}")
+                        raise
+
+                    logger.warning(f"{func.__name__} failed (attempt {attempt}/{max_attempts}): {e}. "
+                                 f"Retrying in {delay}s...")
+                    time.sleep(delay)
+
+                    # Exponential backoff with jitter
+                    delay = min(delay * 2, max_delay)
+
+            return None
+        return wrapper
+    return decorator
 
 
 CALENDAR_URLS = settings.CALENDAR_URLS
@@ -99,6 +149,16 @@ class Calendar(threading.Thread):
         else:
             return arg
 
+    @retry_with_backoff()
+    def _fetch_webcal_events(self, url):
+        """
+        Fetch events from webcal URL with retry logic.
+        :param url: the URL of the webcal
+        :return: list of events
+        """
+        return events(url, start=datetime.today(),
+                     end=datetime.today() + timedelta(days=14))
+
     def get_events_from_webcal(self, new_events, url):
         """
         Retrieve events from webcal and append them to the list
@@ -106,8 +166,7 @@ class Calendar(threading.Thread):
         :param url: the URL of the webcal
         """
         try:
-            timeline: list = events(url, start=datetime.today(),
-                                    end=datetime.today() + timedelta(days=14))
+            timeline = self._fetch_webcal_events(url)
             for event in timeline:
                 start = event.start
                 end = event.end if hasattr(event, 'end') else None
@@ -118,14 +177,51 @@ class Calendar(threading.Thread):
                     'end': end,
                     'summary': summary
                 })
-        except ValueError as error:
-            logger.error('Error reading calendar "{0}"'.format(url))
-            logger.error(error)
+        except Exception as error:
+            # Already logged by retry decorator, just track failure
+            logger.error(f'Failed to fetch webcal calendar "{url}" after all retries')
             pass
-        except httplib2.error.ServerNotFoundError as error:
-            logger.error('Error reading calendar "{0}"'.format(url))
-            logger.error(error)
-            pass
+
+    @retry_with_backoff()
+    def _get_caldav_principal(self, url, username, password):
+        """
+        Get CalDAV principal with retry logic.
+        :param url: URL of CalDAV server
+        :param username: CalDAV username
+        :param password: CalDAV password
+        :return: principal object
+        """
+        client = caldav.DAVClient(url=url, username=username, password=password)
+        return client.principal()
+
+    @retry_with_backoff()
+    def _fetch_caldav_calendars(self, principal):
+        """
+        Fetch calendars from CalDAV principal with retry logic.
+        :param principal: CalDAV principal object
+        :return: list of calendars
+        """
+        return principal.calendars()
+
+    @retry_with_backoff()
+    def _fetch_caldav_events(self, calendar, start, end):
+        """
+        Fetch events from CalDAV calendar with retry logic.
+        :param calendar: CalDAV calendar object
+        :param start: start date
+        :param end: end date
+        :return: list of events
+        """
+        return calendar.date_search(start=start, end=end, expand=True)
+
+    @retry_with_backoff()
+    def _fetch_caldav_todos(self, calendar):
+        """
+        Fetch todos from CalDAV calendar with retry logic.
+        :param calendar: CalDAV calendar object
+        :return: list of todos
+        """
+        return calendar.todos()
 
     def get_events_from_caldav(self, new_events, new_tasks, url, username, password):
         """
@@ -138,61 +234,57 @@ class Calendar(threading.Thread):
         :return: the list of events
         """
         try:
-            client = caldav.DAVClient(url=url, username=username, password=password)
-            principal = client.principal()
-        except SSLError as error:
-            logger.error("SSL error connecting to CalDAV server")
-            logger.error(error)
-            return
-        except urllib3.exceptions.NewConnectionError as error:
-            logger.error("Error establishing connection to '{}'".format(url))
-            logger.error(error)
-            return
-        except caldav.lib.error.AuthorizationError as error:
-            logger.error("Authorization error connecting to '{}'".format(url))
-            logger.error(error)
-            return
-        except requests.exceptions.ConnectionError as error:
-            logger.error("SSL error connecting to CalDAV server")
-            logger.error(error)
+            principal = self._get_caldav_principal(url, username, password)
+        except (caldav.lib.error.AuthorizationError, Exception) as error:
+            logger.error(f"Failed to connect to CalDAV server '{url}' after all retries: {error}")
             return
 
-        calendars = principal.calendars()
+        try:
+            calendars = self._fetch_caldav_calendars(principal)
+        except Exception as error:
+            logger.error(f"Failed to fetch calendars from '{url}' after all retries: {error}")
+            return
 
         for cal in calendars:
-            calendar_events = cal.date_search(start=datetime.today(),
-                                              end=datetime.today() + timedelta(days=7),
-                                              expand=True)
-            for event in calendar_events:
-                start = self.standardize_date(event.vobject_instance.vevent.dtstart.value)
-                summary = event.vobject_instance.vevent.summary.value
+            try:
+                calendar_events = self._fetch_caldav_events(
+                    cal,
+                    start=datetime.today(),
+                    end=datetime.today() + timedelta(days=7)
+                )
+                for event in calendar_events:
+                    start = self.standardize_date(event.vobject_instance.vevent.dtstart.value)
+                    summary = event.vobject_instance.vevent.summary.value
 
-                # Get end time if available
-                try:
-                    end = self.standardize_date(event.vobject_instance.vevent.dtend.value)
-                except AttributeError:
-                    end = None
+                    # Get end time if available
+                    try:
+                        end = self.standardize_date(event.vobject_instance.vevent.dtend.value)
+                    except AttributeError:
+                        end = None
 
-                new_events.append({
-                    'start': start,
-                    'end': end,
-                    'summary': summary
-                })
+                    new_events.append({
+                        'start': start,
+                        'end': end,
+                        'summary': summary
+                    })
 
-            todos = cal.todos()
+                todos = self._fetch_caldav_todos(cal)
 
-            for todo in todos:
-                try:
-                    due = self.standardize_date(todo.vobject_instance.vtodo.due.value)
-                except AttributeError:
-                    due = None
+                for todo in todos:
+                    try:
+                        due = self.standardize_date(todo.vobject_instance.vtodo.due.value)
+                    except AttributeError:
+                        due = None
 
-                summary = todo.vobject_instance.vtodo.summary.value
+                    summary = todo.vobject_instance.vtodo.summary.value
 
-                new_tasks.append({
-                    'due': due,
-                    'summary': summary
-                })
+                    new_tasks.append({
+                        'due': due,
+                        'summary': summary
+                    })
+            except Exception as error:
+                logger.warning(f"Failed to process calendar in '{url}': {error}")
+                continue
 
     def get_latest_events(self):
         """

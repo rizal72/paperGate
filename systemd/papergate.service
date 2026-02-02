@@ -1,6 +1,7 @@
 [Unit]
 Description=paperGate e-Paper Display Manager
-After=network.target
+After=network.target network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple

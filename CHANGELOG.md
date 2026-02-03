@@ -5,6 +5,17 @@ All notable changes to paperGate will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2026-02-03
+
+### Fixed
+
+- **DNS resolution wait**: Added DNS verification before calendar loading
+  - App now waits for DNS resolver to be functional (not just TCP connectivity)
+  - Tests real domains: calendar.google.com, outlook.office365.com, google.com, cloudflare.com
+  - Uses `socket.gethostbyname()` for actual DNS resolution verification
+  - Prevents "Temporary failure in name resolution" errors when router is slow to provide DNS
+  - 60-second timeout with "Waiting DNS... (Xs)" status on display
+
 ## [2.0.1] - 2026-02-02
 
 ### Added

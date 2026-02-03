@@ -49,7 +49,6 @@ branding/
 
 # Claude Code files (project-specific AI assistance)
 .claude/
-CLAUDE.md
 
 # Screenshot generation tools (maintainer only)
 scripts/generate-demo-screenshots.sh

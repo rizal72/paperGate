@@ -202,6 +202,47 @@ class App:
         self.logger.warning(f"Network wait timeout after {timeout}s - proceeding anyway")
         return False
 
+    def _wait_for_dns(self, timeout=60):
+        """
+        Wait for DNS resolution to work.
+        Tests actual DNS resolution, not just TCP connectivity.
+
+        Args:
+            timeout: Maximum seconds to wait (default: 60)
+
+        Returns:
+            bool: True if DNS is working, False if timeout reached
+        """
+        self.logger.info("Waiting for DNS resolution...")
+        start_time = time.time()
+
+        test_domains = [
+            'calendar.google.com',
+            'outlook.office365.com',
+            'google.com',
+            'cloudflare.com'
+        ]
+
+        while time.time() - start_time < timeout:
+            for domain in test_domains:
+                try:
+                    # Test actual DNS resolution
+                    socket.gethostbyname(domain)
+                    self.logger.info(f"DNS resolution confirmed: {domain}")
+                    return True
+                except socket.gaierror:
+                    continue
+
+            # Show waiting message every 5 seconds
+            elapsed = int(time.time() - start_time)
+            if elapsed % 5 == 0:
+                self._show_loading(f"Waiting DNS... ({elapsed}s)")
+
+            time.sleep(1)
+
+        self.logger.warning(f"DNS wait timeout after {timeout}s - proceeding anyway")
+        return False
+
     def __init__(self):
         if DEBUG:
             logging.basicConfig(level=logging.DEBUG, filename=LOGFILE)
@@ -225,6 +266,9 @@ class App:
 
         # Wait for network before loading calendar/weather
         self._wait_for_network()
+
+        # Wait for DNS resolution before loading calendars
+        self._wait_for_dns()
 
         self._show_loading("Loading calendar...")
         self.calendar.get_latest_events()

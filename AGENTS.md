@@ -267,6 +267,64 @@ def render_svg_icon(svg_path, size=50):
 5. Screenshot preview works in web UI
 6. Button presses handled (if hardware buttons connected)
 
+## Weather Troubleshooting
+
+### Symptom: Weather shows "--" or "No data" on dashboard/weather screens
+
+**Most likely cause:** Met.no API returned a non-200 status (e.g., 403 Forbidden).
+
+**Diagnosis steps:**
+1. Check papergate logs for weather errors:
+   ```bash
+   journalctl -u papergate -n 100 --no-pager | grep -i -E '(weather|met\.no|403|error)'
+   ```
+2. Test the Met.no API directly from the Pi:
+   ```bash
+   curl -s -o /dev/null -w '%{http_code}' \
+     -H 'User-Agent: paperGate/1.0 (your.email@example.com)' \
+     'https://api.met.no/weatherapi/locationforecast/2.0/complete.json?lat=45.4642&lon=9.1900'
+   ```
+3. Test the full Python fetch path in isolation:
+   ```bash
+   cd ~/paperGate/core && python3 -c "
+   import sys; sys.path.insert(0, '.')
+   from libs.weather import weather, update_weather
+   update_weather()
+   import time; time.sleep(2)
+   print('Weather data:', weather.weather_data is not None)
+   print('Temp:', weather.get_temperature())
+   print('Desc:', weather.get_sky_text())
+   "
+   ```
+
+**Known issue (May 2026):** Met.no API returned 403 Forbidden (transient, no User-Agent issue). The `Weather` singleton's `weather_data` stays `None` after a failed fetch, and the background thread only retries after `WEATHER_REFRESH` seconds (default: 900s = 15 min).
+
+**Quick fix (if API is responding again):**
+1. Force a weather update via SSH:
+   ```bash
+   cd ~/paperGate/core && python3 -c "
+   import sys; sys.path.insert(0, '.')
+   from libs.weather import weather, update_weather
+   update_weather(); import time; time.sleep(2)
+   "
+   ```
+2. Then restart both services:
+   ```bash
+   pg-restart    # or: sudo systemctl restart papergate papergate-web
+   ```
+
+**If the API is still returning non-200:**
+- Wait for Met.no to recover (usually transient)
+- Check Met.no status at https://status.met.no
+- Verify the `WEATHER_CONTACT_EMAIL` in `local_settings.py` is valid (required by Met.no ToS)
+- Delete the stale cache and restart: `rm ~/paperGate/core/cache_weather.json && pg-restart`
+
+**Note:** The weather fetch does NOT currently use the `@retry_with_backoff` decorator described in Common Patterns. The fetch happens once per `WEATHER_REFRESH` cycle with no immediate retry on failure. If the issue recurs frequently, consider either:
+- Reducing `WEATHER_REFRESH` in `local_settings.py` (e.g., 300 = 5 min)
+- Adding retry logic to `MetnoAdapter.fetch_weather()` in `core/libs/metno_adapter.py`
+
+**Cache file:** Weather data is cached in `core/cache_weather.json` (TTL: `WEATHER_TTL` env var, default 3600s). If the cache is valid and the API is down, the Pi will use cached data. To force a fresh fetch, delete the cache file and restart.
+
 ## Dependencies
 
 **Key Python packages:**

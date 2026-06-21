@@ -271,59 +271,61 @@ def render_svg_icon(svg_path, size=50):
 
 ### Symptom: Weather shows "--" or "No data" on dashboard/weather screens
 
-**Most likely cause:** Met.no API returned a non-200 status (e.g., 403 Forbidden).
+**Most likely cause:** Met.no API returned 403 Forbidden.
 
-**Diagnosis steps:**
-1. Check papergate logs for weather errors:
+**Known root cause (Jun 2026):** `WEATHER_CONTACT_EMAIL` non era importato in `core/settings.py`. 
+Il modulo `weather.py` usava `getattr(settings, 'WEATHER_CONTACT_EMAIL', 'user@example.com')`, 
+quindi il default `user@example.com` veniva sempre usato nell'User-Agent. Met.no richiede un 
+contatto valido e bloccava con 403. **Fix:** aggiunto import in `core/settings.py`.
+
+### Diagnosis steps
+
+1. **Controlla l'User-Agent effettivamente inviato** (primo passo assoluto):
    ```bash
-   journalctl -u papergate -n 100 --no-pager | grep -i -E '(weather|met\.no|403|error)'
+   journalctl -u papergate -n 100 --no-pager | grep -i 'User-Agent\|metno_adapter'
    ```
-2. Test the Met.no API directly from the Pi:
+   Cerca `user@example.com` — se lo vedi, il settings.py non sta propagando l'email corretta.
+
+2. **Testa il Met.no API direttamente**:
    ```bash
    curl -s -o /dev/null -w '%{http_code}' \
      -H 'User-Agent: paperGate/1.0 (your.email@example.com)' \
      'https://api.met.no/weatherapi/locationforecast/2.0/complete.json?lat=45.4642&lon=9.1900'
    ```
-3. Test the full Python fetch path in isolation:
+
+3. **Testa il full Python fetch path**:
    ```bash
    cd ~/paperGate/core && python3 -c "
    import sys; sys.path.insert(0, '.')
-   from libs.weather import weather, update_weather
-   update_weather()
+   import logging; logging.basicConfig(level=logging.DEBUG)
+   from libs.weather import weather
+   weather.update()
    import time; time.sleep(2)
-   print('Weather data:', weather.weather_data is not None)
+   print('Data:', weather.weather_data is not None)
    print('Temp:', weather.get_temperature())
    print('Desc:', weather.get_sky_text())
    "
    ```
+   Controlla che l'User-Agent nel log sia quello giusto (con la tua email).
 
-**Known issue (May 2026):** Met.no API returned 403 Forbidden (transient, no User-Agent issue). The `Weather` singleton's `weather_data` stays `None` after a failed fetch, and the background thread only retries after `WEATHER_REFRESH` seconds (default: 900s = 15 min).
+### Quick fix (dopo aver verificato la causa)
 
-**Quick fix (if API is responding again):**
-1. Force a weather update via SSH:
+1. **Se il problema e' l'email**: aggiungi `WEATHER_CONTACT_EMAIL` in `local_settings.py` 
+   (se manca) e verifica che sia importato in `core/settings.py`
+2. **Cancella la cache e riavvia**:
    ```bash
-   cd ~/paperGate/core && python3 -c "
-   import sys; sys.path.insert(0, '.')
-   from libs.weather import weather, update_weather
-   update_weather(); import time; time.sleep(2)
-   "
+   rm ~/paperGate/core/cache_weather.json && pg-restart
    ```
-2. Then restart both services:
-   ```bash
-   pg-restart    # or: sudo systemctl restart papergate papergate-web
-   ```
+3. **Se l'API e' giu'** (rare, controlla https://status.met.no): aspetta il recupero e riprova
 
-**If the API is still returning non-200:**
-- Wait for Met.no to recover (usually transient)
-- Check Met.no status at https://status.met.no
-- Verify the `WEATHER_CONTACT_EMAIL` in `local_settings.py` is valid (required by Met.no ToS)
-- Delete the stale cache and restart: `rm ~/paperGate/core/cache_weather.json && pg-restart`
+### Struttura del weather fetch
 
-**Note:** The weather fetch does NOT currently use the `@retry_with_backoff` decorator described in Common Patterns. The fetch happens once per `WEATHER_REFRESH` cycle with no immediate retry on failure. If the issue recurs frequently, consider either:
-- Reducing `WEATHER_REFRESH` in `local_settings.py` (e.g., 300 = 5 min)
-- Adding retry logic to `MetnoAdapter.fetch_weather()` in `core/libs/metno_adapter.py`
-
-**Cache file:** Weather data is cached in `core/cache_weather.json` (TTL: `WEATHER_TTL` env var, default 3600s). If the cache is valid and the API is down, the Pi will use cached data. To force a fresh fetch, delete the cache file and restart.
+- **Cache**: `core/cache_weather.json` (TTL: `WEATHER_TTL` env var, default 3600s)
+- **Refresh interval**: `WEATHER_REFRESH` in `local_settings.py` (default 900s = 15 min)
+- **Thread**: `Weather.weather_loop()` conta da `WEATHER_REFRESH` a 0, poi chiama `update()`
+- **Resilienza**: loop protetto da try/except esterno, timeout 15s su richieste HTTP
+- **Forza aggiornamento**: `update_weather()` setta `refresh_interval=0` E lancia `update()` 
+  in un thread separato come safety net
 
 ## Dependencies
 

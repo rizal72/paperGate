@@ -5,17 +5,30 @@ All notable changes to paperGate will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.3] - 2026-05-26
+## [2.0.3] - 2026-06-21
 
 ### Fixed
 
-- **Weather resilience**: Met.no API 403 handling and recovery
-  - Documented troubleshooting procedures for Met.no API failures
-  - Added weather diagnostic commands and recovery steps to AGENTS.md
-  - Clarified weather fetch lifecycle: singleton `weather_data` stays `None` on failure,
-    background thread retries after `WEATHER_REFRESH` (900s)
-  - Quick-fix: force `weather.update()` + `pg-restart` when API recovers
-  - Noted that weather fetch lacks `@retry_with_backoff` unlike calendar module
+- **Weather 403 Forbidden da Met.no (root cause)**: Mancava `WEATHER_CONTACT_EMAIL` in `core/settings.py`
+  - `settings.py` non importava `WEATHER_CONTACT_EMAIL` da `local_settings.py`, quindi veniva sempre
+    usato il default `user@example.com` nell'User-Agent
+  - Met.no richiede un contatto valido nel User-Agent per ToS, e bloccava con 403 le richieste
+    con email non valida (`paperGate/1.0 (user@example.com)`)
+  - Aggiunto import in `core/settings.py` che propaga il valore da `local_settings.py`
+  - Risolve definitivamente il 403 persistente che impediva l'aggiornamento del meteo
+
+- **Weather loop resilience**: Il thread weather moriva silenziosamente al primo errore
+  - `weather_loop()` non proteggeva `self.refresh_interval -= 1` con try/except
+  - Se un'eccezione si verificava fuori da `self.update()`, il daemon thread terminava
+    senza lasciare traccia nei log strutturati (solo stderr)
+  - Aggiunto try/except esterno che cattura TUTTE le eccezioni, le logga con `exc_info=True`,
+    e continua il loop (con sleep 5s su errore persistente per evitare tight-loop)
+  - Aggiunto `int(getattr(...))` per coercizione del tipo di `WEATHER_REFRESH`
+  - Aggiunto `timeout=15` alle richieste `requests.get()` in `weather_utility.py`
+    per evitare hang infiniti sulla rete
+
+- **update_weather() robusto**: Ora avvia `weather.update()` in un thread separato come safety net,
+  funziona anche se il background loop e' bloccato o morto
 
 ## [2.0.2] - 2026-02-03
 

@@ -94,6 +94,11 @@ except ImportError:
     ]
 
 try:
+    from local_settings import WEATHER_CONTACT_EMAIL
+except ImportError:
+    WEATHER_CONTACT_EMAIL = "user@example.com"
+
+try:
     from local_settings import WEATHER_CITY
 except ImportError:
     WEATHER_CITY = "Richmond, VA"

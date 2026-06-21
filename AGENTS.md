@@ -267,6 +267,34 @@ def render_svg_icon(svg_path, size=50):
 5. Screenshot preview works in web UI
 6. Button presses handled (if hardware buttons connected)
 
+## Physical Buttons (WaveShare e-Paper HAT)
+
+The 4 physical buttons on the e-paper display HAT are mapped as follows:
+
+| Bottone | GPIO | Nome codice | `PAGE_BUTTONS=True` (default) | Azione contestuale |
+|---------|------|-------------|-------------------------------|-------------------|
+| **KEY1** (top) | GPIO17 | `button_number=0` | Screen **precedente** | Dipende dallo screen |
+| **KEY2** | GPIO22 | `button_number=1` | Dipende dallo screen | Refresh weather/calendar/fortuna |
+| **KEY3** | GPIO23 | `button_number=2` | Dipende dallo screen | Navigazione/viste alternative |
+| **KEY4** (bottom) | GPIO27 | `button_number=3` | Screen **successivo** | Dipende dallo screen |
+
+Con `PAGE_BUTTONS=True` (default in `local_settings.py`), KEY1 e KEY4 fanno navigazione tra gli screen, KEY2 e KEY3 passano allo screen corrente per azioni contestuali.
+
+Se `PAGE_BUTTONS=False`, TUTTI e 4 i bottoni vengono gestiti dallo screen corrente.
+
+### Azioni per screen (KEY2 e KEY3)
+
+| Screen | KEY2 (button 1) | KEY3 (button 2) |
+|--------|-----------------|-----------------|
+| dashboard | Refresh calendario + meteo | - |
+| weather | Refresh meteo + ridisegna | - |
+| system | Refresh dati sistema | - |
+| system_dashboard | Refresh dati sistema | - |
+| tailscale | Refresh stato Tailscale | - |
+| calendar | Prossimo giorno con eventi | Giorno precedente |
+| fortune | Nuova frase | - |
+| webview | Refresh feed RSS | - |
+
 ## Weather Troubleshooting
 
 ### Symptom: Weather shows "--" or "No data" on dashboard/weather screens

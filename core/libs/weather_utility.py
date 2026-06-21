@@ -95,7 +95,7 @@ def get_json_from_url(url, headers, cache_file_name, ttl):
     if (is_stale(cache_file_name, ttl)):
         logging.info("Cache file is stale. Fetching from source.")
         try:
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=15)
             response.raise_for_status()
             response_data = response.text
             response_json = json.loads(response_data)
@@ -124,7 +124,7 @@ def get_xml_from_url(url, headers, cache_file_name, ttl):
     if (is_stale(cache_file_name, ttl)):
         logging.info("Cache file is stale. Fetching from source.")
         try:
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=15)
             response.raise_for_status()
             response_data = response.text
 

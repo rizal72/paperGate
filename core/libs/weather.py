@@ -14,7 +14,7 @@ WEATHER_LATITUDE = getattr(settings, 'WEATHER_LATITUDE', 45.4642)  # Default: Mi
 WEATHER_LONGITUDE = getattr(settings, 'WEATHER_LONGITUDE', 9.1900)
 WEATHER_CITY_NAME = getattr(settings, 'WEATHER_CITY_NAME', 'Milano')  # Default: Milano
 WEATHER_CONTACT_EMAIL = getattr(settings, 'WEATHER_CONTACT_EMAIL', 'user@example.com')
-WEATHER_REFRESH = getattr(settings, 'WEATHER_REFRESH', 900)
+WEATHER_REFRESH = int(getattr(settings, 'WEATHER_REFRESH', 900))
 
 logger = logging.getLogger("pitftmanager.libs.weather")
 
@@ -44,15 +44,21 @@ class Weather(threading.Thread):
         self.shutdown.wait()
 
     def weather_loop(self):
+        logger.debug("Weather loop started (refresh_interval=%s)", self.refresh_interval)
         while not self.shutdown.is_set():
-            self.refresh_interval -= 1
-            time.sleep(1)
-            if self.refresh_interval < 1:
-                try:
-                    self.update()
-                except Exception as error:
-                    logger.warning(f"Weather update error: {error}")
-                self.refresh_interval = WEATHER_REFRESH
+            try:
+                self.refresh_interval -= 1
+                time.sleep(1)
+                if self.refresh_interval < 1:
+                    logger.debug("Weather loop: triggering periodic update")
+                    try:
+                        self.update()
+                    except Exception as error:
+                        logger.warning(f"Weather update error: {error}", exc_info=True)
+                    self.refresh_interval = WEATHER_REFRESH
+            except Exception as error:
+                logger.error(f"Weather loop iteration crashed: {error}", exc_info=True)
+                time.sleep(5)  # Evita tight-loop su errore persistente
 
     def stop(self):
         self.shutdown.set()
@@ -236,10 +242,13 @@ def get_weather():
 
 def update_weather():
     """
-    Force immediate weather update
+    Force immediate weather update (works even if background loop is dead).
+    Sets refresh_interval=0 so the background thread picks it up,
+    and also runs update() directly in a daemon thread as safety net.
     :return: None
     """
     weather.refresh_interval = 0
+    threading.Thread(target=weather.update, daemon=True).start()
 
 
 if __name__ == '__main__':
